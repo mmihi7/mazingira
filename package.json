@@ -1,0 +1,30 @@
+{
+  "name": "mazingira-governors-platform",
+  "version": "1.0.0",
+  "description": "Mazingira - Governor's Planning Platform for Nairobi County",
+  "main": "mazingira-v4.html",
+  "scripts": {
+    "start": "python -m http.server 8000",
+    "dev": "python -m http.server 8000",
+    "build": "echo 'Static site - no build needed'",
+    "deploy": "vercel --prod"
+  },
+  "keywords": [
+    "governance",
+    "planning",
+    "nairobi",
+    "county",
+    "mobile-responsive",
+    "static-site"
+  ],
+  "author": "Mazingira Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/mazingira.git"
+  },
+  "homepage": "https://mazingira.vercel.app",
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
