@@ -542,10 +542,10 @@ body{background:var(--sky);color:var(--text);font-family:'Plus Jakarta Sans',san
           <div class="upload-icon">📊</div>
           <div class="upload-text">
             <div class="upload-title">Upload County Data</div>
-            <div class="upload-sub">Upload CSV or Excel files to populate dashboard</div>
+            <div class="upload-sub">Upload CSV, Excel, PDF, Word, or text files for AI analysis</div>
             <label class="upload-btn">
               📎 Upload Data File
-              <input type="file" id="county-data-input" accept=".csv,.xlsx,.xls" onchange="handleDataUpload(this, 'county')">
+              <input type="file" id="county-data-input" accept=".csv,.xlsx,.xls,.pdf,.doc,.docx,.txt" onchange="handleDataUpload(this, 'county')">
             </label>
           </div>
         </div>
@@ -1539,16 +1539,320 @@ RESPONSE FORMAT:
     `;
   }
 
-  async processWithAI(data, pageType) {
-    const prompt = this.generateContextualPrompt(data, pageType);
+  async processWithAI(data, pageType, documentType = 'structured') {
+    if (documentType === 'unstructured') {
+      return this.processUnstructuredDocument(data, pageType);
+    } else {
+      const prompt = this.generateContextualPrompt(data, pageType);
+      
+      // Simulate AI processing (in real implementation, this would call an AI API)
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          const aiResponse = this.simulateAIResponse(data, pageType);
+          resolve(aiResponse);
+        }, 1500);
+      });
+    }
+  }
+
+  async processUnstructuredDocument(content, pageType) {
+    // Enhanced processing for unstructured documents
+    const analysis = {
+      documentType: 'unstructured',
+      contentType: this.identifyContentType(content),
+      extractedData: this.extractDataFromText(content),
+      insights: [],
+      metrics: [],
+      alerts: [],
+      recommendations: []
+    };
+
+    // Step 1: Identify document type and content
+    const contentType = analysis.contentType;
     
-    // Simulate AI processing (in real implementation, this would call an AI API)
+    // Step 2: Extract numerical data and patterns
+    const extractedData = this.extractNumericalData(content);
+    
+    // Step 3: Contextual analysis based on content
+    const contextualInsights = this.generateContextualInsights(content, pageType);
+    
+    // Step 4: Apply relevant skills to extracted data
+    const relevantSkills = this.activateSkillsForUnstructured(content, extractedData);
+    
+    // Step 5: Generate comprehensive response
+    analysis.extractedData = extractedData;
+    analysis.insights = contextualInsights;
+    analysis.activeSkills = relevantSkills;
+    analysis.metrics = this.generateMetricsFromExtracted(extractedData);
+    analysis.alerts = this.identifyIssuesFromText(content);
+    analysis.recommendations = this.generateRecommendationsFromText(content, extractedData);
+
     return new Promise((resolve) => {
-      setTimeout(() => {
-        const aiResponse = this.simulateAIResponse(data, pageType);
-        resolve(aiResponse);
-      }, 1500);
+      setTimeout(() => resolve(analysis), 2000);
     });
+  }
+
+  identifyContentType(content) {
+    const text = content.toLowerCase();
+    
+    if (text.includes('population') || text.includes('demographic') || text.includes('census')) {
+      return 'demographic_report';
+    } else if (text.includes('flood') || text.includes('risk') || text.includes('hazard')) {
+      return 'risk_assessment';
+    } else if (text.includes('road') || text.includes('infrastructure') || text.includes('transport')) {
+      return 'infrastructure_report';
+    } else if (text.includes('green') || text.includes('environment') || text.includes('tree')) {
+      return 'environmental_report';
+    } else if (text.includes('health') || text.includes('hospital') || text.includes('medical')) {
+      return 'healthcare_report';
+    } else if (text.includes('education') || text.includes('school') || text.includes('literacy')) {
+      return 'education_report';
+    } else if (text.includes('business') || text.includes('economy') || text.includes('gdp')) {
+      return 'economic_report';
+    } else {
+      return 'general_report';
+    }
+  }
+
+  extractDataFromText(content) {
+    const extracted = {
+      numbers: [],
+      percentages: [],
+      currencies: [],
+      dates: [],
+      locations: [],
+      keyPhrases: []
+    };
+
+    // Extract numbers and percentages
+    const numberPattern = /\b\d{1,3}(?:,\d{3})*(?:\.\d+)?\b/g;
+    const percentagePattern = /\b\d{1,3}(?:\.\d+)?%/g;
+    const currencyPattern = /ksh\s*\d{1,3}(?:,\d{3})*(?:\.\d+)?/gi;
+    const datePattern = /\b\d{4}\b|\b\d{1,2}\/\d{1,2}\/\d{4}\b/g;
+    const locationPattern = /\b(?:nairobi|mathare|kibera|cbd|westlands|eastlands|karen|langata)\b/gi;
+
+    extracted.numbers = content.match(numberPattern) || [];
+    extracted.percentages = content.match(percentagePattern) || [];
+    extracted.currencies = content.match(currencyPattern) || [];
+    extracted.dates = content.match(datePattern) || [];
+    extracted.locations = content.match(locationPattern) || [];
+
+    // Extract key phrases and metrics
+    const lines = content.split('\n');
+    lines.forEach(line => {
+      if (line.includes('population') || line.includes('people')) {
+        extracted.keyPhrases.push(line.trim());
+      } else if (line.includes('coverage') || line.includes('access')) {
+        extracted.keyPhrases.push(line.trim());
+      } else if (line.includes('risk') || line.includes('concern')) {
+        extracted.keyPhrases.push(line.trim());
+      }
+    });
+
+    return extracted;
+  }
+
+  extractNumericalData(content) {
+    const data = {
+      population: [],
+      percentages: [],
+      amounts: [],
+      counts: []
+    };
+
+    // Extract population data
+    const popMatches = content.match(/population[:\s]*([\d,]+(?:\.\d+)?)/gi);
+    if (popMatches) {
+      data.population = popMatches.map(match => 
+        parseFloat(match.match(/[\d,]+(?:\.\d+)?/)[0].replace(/,/g, ''))
+      );
+    }
+
+    // Extract percentages
+    const percMatches = content.match(/\b\d{1,3}(?:\.\d+)?%/g);
+    if (percMatches) {
+      data.percentages = percMatches.map(p => parseFloat(p.replace('%', '')));
+    }
+
+    // Extract monetary amounts
+    const amountMatches = content.match(/ksh\s*([\d,]+(?:\.\d+)?)/gi);
+    if (amountMatches) {
+      data.amounts = amountMatches.map(match => 
+        parseFloat(match.match(/[\d,]+(?:\.\d+)?/)[0].replace(/,/g, ''))
+      );
+    }
+
+    return data;
+  }
+
+  generateContextualInsights(content, pageType) {
+    const insights = [];
+    const text = content.toLowerCase();
+
+    // Demographic insights
+    if (text.includes('population') || text.includes('people')) {
+      insights.push('Document contains demographic data analysis');
+      if (text.includes('growing') || text.includes('increasing')) {
+        insights.push('Population growth trends identified');
+      }
+    }
+
+    // Environmental insights
+    if (text.includes('green') || text.includes('tree')) {
+      insights.push('Environmental indicators found in document');
+      if (text.includes('declining') || text.includes('decreasing')) {
+        insights.push('Environmental degradation concerns identified');
+      }
+    }
+
+    // Risk insights
+    if (text.includes('flood') || text.includes('risk')) {
+      insights.push('Risk assessment content detected');
+      if (text.includes('high') || text.includes('severe')) {
+        insights.push('High-risk areas identified');
+      }
+    }
+
+    // Infrastructure insights
+    if (text.includes('road') || text.includes('infrastructure')) {
+      insights.push('Infrastructure analysis present');
+      if (text.includes('poor') || text.includes('inadequate')) {
+        insights.push('Infrastructure quality concerns identified');
+      }
+    }
+
+    return insights;
+  }
+
+  activateSkillsForUnstructured(content, extractedData) {
+    const activeSkills = [];
+    const text = content.toLowerCase();
+
+    // Check each skill for relevance
+    this.skills.forEach((skill, key) => {
+      const shouldActivate = skill.triggers.some(trigger => 
+        text.includes(trigger) || 
+        extractedData.keyPhrases.some(phrase => phrase.toLowerCase().includes(trigger))
+      );
+      
+      if (shouldActivate) {
+        activeSkills.push({
+          key,
+          name: skill.name,
+          description: skill.description,
+          confidence: this.calculateSkillConfidence(text, skill.triggers),
+          dataSource: 'unstructured_text'
+        });
+      }
+    });
+
+    return activeSkills;
+  }
+
+  calculateSkillConfidence(text, triggers) {
+    const triggerCount = triggers.filter(trigger => text.includes(trigger)).length;
+    const totalTriggers = triggers.length;
+    return Math.min((triggerCount / totalTriggers) * 100, 100);
+  }
+
+  generateMetricsFromExtracted(extractedData) {
+    const metrics = [];
+
+    if (extractedData.population.length > 0) {
+      metrics.push({
+        name: 'Population References',
+        value: extractedData.population.length + ' data points',
+        trend: 'stable',
+        status: 'good',
+        icon: '👥'
+      });
+    }
+
+    if (extractedData.percentages.length > 0) {
+      const avgPercentage = extractedData.percentages.reduce((a, b) => a + b, 0) / extractedData.percentages.length;
+      metrics.push({
+        name: 'Average Percentage',
+        value: avgPercentage.toFixed(1) + '%',
+        trend: 'stable',
+        status: avgPercentage > 70 ? 'good' : avgPercentage > 40 ? 'warn' : 'risk',
+        icon: '📊'
+      });
+    }
+
+    if (extractedData.amounts.length > 0) {
+      const totalAmount = extractedData.amounts.reduce((a, b) => a + b, 0);
+      metrics.push({
+        name: 'Total Financial References',
+        value: 'KSh ' + this.formatNumber(totalAmount),
+        trend: 'stable',
+        status: 'good',
+        icon: '💰'
+      });
+    }
+
+    return metrics;
+  }
+
+  identifyIssuesFromText(content) {
+    const alerts = [];
+    const text = content.toLowerCase();
+
+    // Risk keywords
+    const riskKeywords = ['concern', 'problem', 'issue', 'challenge', 'critical', 'urgent', 'severe'];
+    const foundRisks = riskKeywords.filter(keyword => text.includes(keyword));
+    
+    if (foundRisks.length > 0) {
+      alerts.push({
+        type: 'warn',
+        title: 'Issues Identified in Document',
+        description: `Found ${foundRisks.length} concern indicators in the text`,
+        icon: '⚠️'
+      });
+    }
+
+    // Negative trends
+    if (text.includes('declining') || text.includes('decreasing') || text.includes('worsening')) {
+      alerts.push({
+        type: 'risk',
+        title: 'Negative Trends Detected',
+        description: 'Document mentions declining or worsening conditions',
+        icon: '📉'
+      });
+    }
+
+    return alerts;
+  }
+
+  generateRecommendationsFromText(content, extractedData) {
+    const recommendations = [];
+    const text = content.toLowerCase();
+
+    // General recommendations based on content
+    if (text.includes('recommend') || text.includes('suggest')) {
+      recommendations.push({
+        title: 'Document Contains Recommendations',
+        description: 'Original recommendations found in document - review for implementation',
+        priority: 'high'
+      });
+    }
+
+    if (extractedData.numbers.length > 10) {
+      recommendations.push({
+        title: 'Data-Rich Document',
+        description: 'Document contains substantial numerical data - consider structured analysis',
+        priority: 'medium'
+      });
+    }
+
+    if (text.includes('need') || text.includes('require') || text.includes('lack')) {
+      recommendations.push({
+        title: 'Resource Needs Identified',
+        description: 'Document indicates resource requirements or gaps',
+        priority: 'high'
+      });
+    }
+
+    return recommendations;
   }
 
   simulateAIResponse(data, pageType) {
@@ -1763,15 +2067,26 @@ class DataProcessor {
     try {
       this.showProcessing(pageType);
       const content = await this.readFile(file);
-      const parsedData = this.parseData(content, file.name);
+      const documentType = this.detectDocumentType(file);
+      
+      let parsedData;
+      if (documentType === 'structured') {
+        parsedData = this.parseData(content, file.name);
+      } else {
+        // For unstructured documents, create a different structure
+        parsedData = {
+          headers: ['content'],
+          rows: [{ content: content }],
+          documentType: 'unstructured',
+          originalFilename: file.name
+        };
+      }
+      
       this.data[pageType] = parsedData;
       
       // Use AI prompt system for intelligent analysis
-      const aiResponse = await this.aiSystem.processWithAI(parsedData, pageType);
+      const aiResponse = await this.aiSystem.processWithAI(parsedData, pageType, documentType);
       this.insights[pageType] = aiResponse;
-      
-      // Activate relevant skills based on data content
-      await this.activateRelevantSkills(parsedData, pageType);
       
       // Update UI with AI-generated insights
       this.updateUIWithAI(pageType, aiResponse);
@@ -1813,14 +2128,37 @@ class DataProcessor {
       reader.onload = e => resolve(e.target.result);
       reader.onerror = reject;
       
-      if (file.name.endsWith('.csv')) {
+      const extension = file.name.split('.').pop().toLowerCase();
+      
+      if (extension === 'csv') {
         reader.readAsText(file);
-      } else if (file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) {
+      } else if (extension === 'xlsx' || extension === 'xls') {
         // For Excel files, we'll need a library like SheetJS
         // For now, let's handle as text
         reader.readAsText(file);
+      } else if (extension === 'pdf' || extension === 'doc' || extension === 'docx' || 
+                 extension === 'txt' || extension === 'rtf') {
+        // Handle unstructured documents
+        reader.readAsText(file);
+      } else {
+        // Default to text for unknown formats
+        reader.readAsText(file);
       }
     });
+  }
+
+  detectDocumentType(file) {
+    const extension = file.name.split('.').pop().toLowerCase();
+    
+    if (extension === 'csv') {
+      return 'structured';
+    } else if (extension === 'xlsx' || extension === 'xls') {
+      return 'structured';
+    } else if (['pdf', 'doc', 'docx', 'txt', 'rtf'].includes(extension)) {
+      return 'unstructured';
+    } else {
+      return 'unknown';
+    }
   }
 
   parseData(content, filename) {
