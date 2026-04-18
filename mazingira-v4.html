@@ -430,6 +430,20 @@ body{background:var(--sky);color:var(--text);font-family:'Plus Jakarta Sans',san
 .ai-thinking{display:inline-block;animation:thinking 1.4s infinite;}
 @keyframes thinking{0%,80%,100%{opacity:0;}40%{opacity:1;}}
 
+/* Empty State Styles */
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;padding:40px 20px;text-align:center;}
+.empty-icon{font-size:64px;margin-bottom:16px;opacity:0.6;}
+.empty-title{font-family:'Fraunces',serif;font-size:24px;font-weight:700;color:var(--earth);margin-bottom:8px;}
+.empty-sub{font-size:14px;color:var(--text-soft);line-height:1.5;max-width:400px;margin-bottom:24px;}
+.empty-features{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:32px;max-width:500px;}
+.feature-item{display:flex;flex-direction:column;align-items:center;padding:16px;background:var(--sky);border:1px solid var(--border);border-radius:8px;transition:all 0.2s;}
+.feature-item:hover{background:var(--sky-deep);border-color:var(--earth-light);transform:translateY(-2px);}
+.feature-icon{font-size:24px;margin-bottom:8px;}
+.feature-text{font-size:12px;color:var(--text);font-weight:500;}
+.empty-actions{margin-top:16px;}
+.empty-action-btn{padding:12px 24px;background:var(--earth-light);color:var(--earth);border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.2s;}
+.empty-action-btn:hover{background:var(--earth);transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,0.15);}
+
 /* LLM Configuration Panel Styles */
 .llm-config-panel{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);z-index:2000;display:flex;align-items:center;justify-content:center;}
 .llm-config-content{background:var(--white);border-radius:12px;padding:24px;max-width:400px;width:90%;box-shadow:0 10px 30px rgba(0,0,0,0.3);}
@@ -624,39 +638,33 @@ body{background:var(--sky);color:var(--text);font-family:'Plus Jakarta Sans',san
 
     <!-- MAP -->
     <div class="map-col" id="map-county">
-      <svg class="map-svg" viewBox="0 0 900 600" preserveAspectRatio="xMidYMid slice">
-        <rect width="900" height="600" fill="#D4EBBC"/>
-        <polygon points="100,70 800,50 860,180 840,530 560,560 220,550 90,400 70,200" fill="#C4E0A8" stroke="#98C878" stroke-width="2"/>
-        <polygon points="100,70 450,55 470,260 100,280" fill="#B4D498" stroke="#88B860" stroke-width="1" opacity="0.9"/>
-        <polygon points="450,55 800,70 820,270 470,260" fill="#EDD498" stroke="#C8A850" stroke-width="1" opacity="0.8"/>
-        <polygon points="90,280 470,260 450,520 110,510" fill="#A8C8E0" stroke="#70A8CC" stroke-width="1" opacity="0.8"/>
-        <polygon points="470,260 820,270 800,530 450,520" fill="#C8C0DC" stroke="#9888C0" stroke-width="1" opacity="0.7"/>
-        <line x1="100" y1="180" x2="830" y2="180" stroke="white" stroke-width="3.5" opacity="0.7"/>
-        <line x1="460" y1="55" x2="460" y2="555" stroke="white" stroke-width="3.5" opacity="0.7"/>
-        <line x1="100" y1="380" x2="840" y2="390" stroke="white" stroke-width="2" opacity="0.5"/>
-        <line x1="260" y1="70" x2="240" y2="540" stroke="white" stroke-width="1.5" opacity="0.4"/>
-        <line x1="650" y1="55" x2="660" y2="540" stroke="white" stroke-width="1.5" opacity="0.4"/>
-        <path d="M 120 300 Q 260 318 380 290 Q 500 262 640 308 Q 760 348 840 318" fill="none" stroke="#5A9CC0" stroke-width="4.5" opacity="0.7"/>
-        <circle cx="195" cy="140" r="28" fill="#68B048" opacity="0.55"/>
-        <circle cx="232" cy="118" r="22" fill="#4A8030" opacity="0.5"/>
-        <circle cx="168" cy="122" r="20" fill="#78C058" opacity="0.55"/>
-        <circle cx="674" cy="418" r="35" fill="#68B048" opacity="0.5"/>
-        <circle cx="714" cy="442" r="26" fill="#4A8030" opacity="0.48"/>
-        <ellipse cx="388" cy="322" rx="85" ry="56" fill="rgba(217,95,69,0.22)" stroke="#D95F45" stroke-width="2" stroke-dasharray="8,5"/>
-        <circle cx="388" cy="322" r="10" fill="#D95F45"/><circle cx="388" cy="322" r="18" fill="none" stroke="#D95F45" stroke-width="2" opacity="0.5"/>
-        <circle cx="310" cy="148" r="9" fill="#F5C842"/><circle cx="310" cy="148" r="17" fill="none" stroke="#F5C842" stroke-width="2" opacity="0.5"/>
-        <circle cx="590" cy="178" r="9" fill="#5A8A42"/><circle cx="590" cy="178" r="17" fill="none" stroke="#5A8A42" stroke-width="2" opacity="0.5"/>
-        <circle cx="220" cy="400" r="8" fill="#4A90B8"/><circle cx="622" cy="422" r="8" fill="#5A8A42"/>
-        <rect x="128" y="90" width="100" height="44" rx="8" fill="white" opacity="0.8"/>
-        <text x="178" y="110" font-family="Plus Jakarta Sans" font-size="11" font-weight="700" fill="#2D4A22" text-anchor="middle">Westlands</text>
-        <text x="178" y="126" font-family="Plus Jakarta Sans" font-size="10" fill="#7A9B70" text-anchor="middle">Green Zone 🌿</text>
-        <rect x="555" y="96" width="104" height="44" rx="8" fill="white" opacity="0.8"/>
-        <text x="607" y="116" font-family="Plus Jakarta Sans" font-size="11" font-weight="700" fill="#7A5800" text-anchor="middle">Eastlands</text>
-        <text x="607" y="132" font-family="Plus Jakarta Sans" font-size="10" fill="#B08040" text-anchor="middle">Business Zone 💼</text>
-        <rect x="294" y="354" width="96" height="44" rx="8" fill="white" opacity="0.8"/>
-        <text x="342" y="374" font-family="Plus Jakarta Sans" font-size="11" font-weight="700" fill="#2C5F7A" text-anchor="middle">Kibera</text>
-        <text x="342" y="390" font-family="Plus Jakarta Sans" font-size="10" fill="#5A90B0" text-anchor="middle">Needs Support 👐</text>
-        <rect x="576" y="412" width="98" height="44" rx="8" fill="white" opacity="0.8"/>
+      <div class="empty-state" id="empty-map-state">
+        <div class="empty-icon">📊</div>
+        <div class="empty-title">No Data Yet</div>
+        <div class="empty-sub">Upload CSV, Excel, PDF, or Word files to populate this map with real data</div>
+        <div class="empty-features">
+          <div class="feature-item">
+            <div class="feature-icon">📎</div>
+            <div class="feature-text">Upload structured data (CSV/Excel)</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon">📄</div>
+            <div class="feature-text">Upload reports (PDF/Word)</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon">🤖</div>
+            <div class="feature-text">AI-powered analysis</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon">🗺</div>
+            <div class="feature-text">Interactive maps</div>
+          </div>
+        </div>
+        <div class="empty-actions">
+          <button class="empty-action-btn" onclick="document.getElementById('county-data-input').click()">
+            Start by uploading data →
+          </button>
+        </div>
         <text x="625" y="432" font-family="Plus Jakarta Sans" font-size="11" font-weight="700" fill="#2D4A22" text-anchor="middle">Lang'ata</text>
         <text x="625" y="448" font-family="Plus Jakarta Sans" font-size="10" fill="#7A9B70" text-anchor="middle">Green Belt 🌳</text>
         <rect x="316" y="280" width="144" height="26" rx="7" fill="#FDECEA" opacity="0.95"/>
@@ -2203,6 +2211,20 @@ class DataProcessor {
     }
   }
 
+  // Initialize empty state for all pages
+  initializeEmptyStates() {
+    const pageTypes = ['county', 'roads', 'nature', 'people', 'economy', 'future'];
+    pageTypes.forEach(pageType => {
+      const emptyState = document.getElementById('empty-map-state');
+      const dynamicContent = document.getElementById('dynamic-map-content');
+      
+      if (emptyState && dynamicContent) {
+        emptyState.style.display = 'flex';
+        dynamicContent.style.display = 'none';
+      }
+    });
+  }
+
   async activateRelevantSkills(data, pageType) {
     const headers = data.headers.map(h => h.toLowerCase());
     const activeSkills = [];
@@ -2524,20 +2546,37 @@ class DataProcessor {
   }
 
   updateUIWithAI(pageType, aiResponse) {
-    // Update snap grid with AI-generated metrics
-    this.updateSnapGridWithAI(pageType, aiResponse.keyMetrics);
+    // Check if we have data to show
+    const hasData = this.data[pageType] && this.data[pageType].rows && this.data[pageType].rows.length > 0;
     
-    // Update alerts with AI-generated alerts
-    this.updateAlertsWithAI(pageType, aiResponse.alerts);
+    // Show/hide empty state
+    const emptyState = document.getElementById('empty-map-state');
+    const dynamicContent = document.getElementById('dynamic-map-content');
     
-    // Update AI chat with comprehensive insights
-    this.updateAIChatWithAI(pageType, aiResponse);
-    
-    // Update skills display
-    this.updateSkillsDisplay(pageType, aiResponse.activeSkills || []);
-    
-    // Create visualizations
-    this.createVisualizations(pageType, aiResponse.visualizations);
+    if (hasData) {
+      // Hide empty state, show dynamic content
+      if (emptyState) emptyState.style.display = 'none';
+      if (dynamicContent) dynamicContent.style.display = 'block';
+      
+      // Update snap grid with AI-generated metrics
+      this.updateSnapGridWithAI(pageType, aiResponse.keyMetrics);
+      
+      // Update alerts with AI-generated alerts
+      this.updateAlertsWithAI(pageType, aiResponse.alerts);
+      
+      // Update AI chat with comprehensive insights
+      this.updateAIChatWithAI(pageType, aiResponse);
+      
+      // Update skills display
+      this.updateSkillsDisplay(pageType, aiResponse.activeSkills || []);
+      
+      // Create visualizations
+      this.createVisualizations(pageType, aiResponse.visualizations);
+    } else {
+      // Show empty state, hide dynamic content
+      if (emptyState) emptyState.style.display = 'flex';
+      if (dynamicContent) dynamicContent.style.display = 'none';
+    }
   }
 
   updateSnapGridWithAI(pageType, metrics) {
@@ -2823,6 +2862,9 @@ function autoConfigureLLM() {
 
 // Initialize LLM configuration
 autoConfigureLLM();
+
+// Initialize empty states
+initializeEmptyStates();
 
 // ── LLM CONFIGURATION FUNCTIONS ──
 function toggleLLMConfig() {
