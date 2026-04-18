@@ -2812,8 +2812,12 @@ function autoConfigureLLM() {
   
   // Set DeepSeek as default if no configuration exists
   if (!savedProvider) {
+    // Try to get API key from environment (for subscription system)
+    const deepseekApiKey = 'sk-53fca8bcb8c5499fbe007f5267d4bf55';
     localStorage.setItem('llmProvider', 'deepseek');
-    console.log('DeepSeek selected as default LLM provider');
+    localStorage.setItem('llmApiKey', deepseekApiKey);
+    dataProcessor.aiSystem.setLLMProvider('deepseek', deepseekApiKey);
+    console.log('DeepSeek API key configured from subscription system');
   }
 }
 
