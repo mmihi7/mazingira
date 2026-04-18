@@ -2,7 +2,7 @@
   "name": "mazingira-governors-platform",
   "version": "1.0.0",
   "description": "Mazingira - Governor's Planning Platform for Nairobi County",
-  "main": "mazingira-v4.html",
+  "main": "public/index.html",
   "scripts": {
     "start": "python -m http.server 8000",
     "dev": "python -m http.server 8000",

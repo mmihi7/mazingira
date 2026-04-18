@@ -1,0 +1,1491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Mazingira — Governor's Planning Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,600;0,700;0,800;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --earth:#2D4A22; --earth-mid:#3D6B30; --earth-light:#5A8A42;
+  --leaf:#7DBF5E; --sky:#EAF4E0; --sky-deep:#D4EBBC;
+  --sun:#F5C842; --sun-soft:#FDF8E6;
+  --soil:#C17B3A; --soil-soft:#F5E6D3;
+  --water:#4A90B8; --water-soft:#E0F0F8;
+  --risk:#D95F45; --risk-soft:#FDECEA;
+  --text:#1C2E14; --text-mid:#4A6340; --text-soft:#7A9B70;
+  --white:#FAFDF7; --border:#CCDFC2; --border-soft:#E0EDD8;
+  --card:#FFFFFF;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--sky);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+
+/* ── TOPNAV ── */
+.topnav{background:var(--earth);height:54px;display:flex;align-items:center;padding:0 20px;gap:16px;flex-shrink:0;z-index:200;}
+.logo{font-family:'Fraunces',serif;font-size:20px;font-weight:800;color:var(--sky);display:flex;align-items:center;gap:7px;white-space:nowrap;}
+.county-pill{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:20px;padding:5px 13px;display:flex;align-items:center;gap:6px;color:var(--sky);font-size:13px;font-weight:500;}
+.county-pill select{background:transparent;border:none;color:var(--sky);font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:500;outline:none;cursor:pointer;}
+.county-pill select option{color:var(--text);background:white;}
+.nav-right{margin-left:auto;display:flex;align-items:center;gap:12px;}
+.plan-badge{background:var(--sun);color:var(--earth);padding:5px 12px;border-radius:20px;font-size:12px;font-weight:700;white-space:nowrap;}
+
+/* Upload button */
+.upload-btn{display:flex;align-items:center;gap:7px;background:rgba(255,255,255,0.1);border:1.5px solid rgba(255,255,255,0.3);border-radius:20px;padding:6px 14px;color:var(--sky);font-size:12px;font-weight:600;cursor:pointer;transition:all 0.15s;white-space:nowrap;}
+.upload-btn:hover{background:rgba(255,255,255,0.18);border-color:rgba(255,255,255,0.5);}
+.upload-btn input{display:none;}
+
+.gov-chip{display:flex;align-items:center;gap:8px;cursor:pointer;}
+.gov-avatar{width:34px;height:34px;background:linear-gradient(135deg,var(--leaf),var(--earth-light));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:var(--earth);border:2px solid rgba(255,255,255,0.3);}
+.gov-info{display:flex;flex-direction:column;}
+.gov-name{font-size:12px;font-weight:700;color:var(--sky);line-height:1.2;}
+.gov-role{font-size:10px;color:rgba(234,244,224,0.6);font-weight:500;}
+
+/* ── TABS ── */
+.tabbar{background:var(--white);border-bottom:2px solid var(--border);display:flex;padding:0 20px;flex-shrink:0;overflow-x:auto;}
+.tabbar::-webkit-scrollbar{display:none;}
+.tab{padding:13px 16px;font-size:13px;font-weight:500;color:var(--text-soft);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;display:flex;align-items:center;gap:6px;transition:all 0.15s;white-space:nowrap;flex-shrink:0;user-select:none;}
+.tab:hover{color:var(--earth-mid);}
+.tab.active{color:var(--earth);border-bottom-color:var(--earth);font-weight:700;}
+
+/* ── BODY ── */
+.app-body{display:flex;flex:1;overflow:hidden;}
+.page{display:none;width:100%;overflow:hidden;}
+.page.active{display:flex;flex:1;}
+
+/* ── THREE-COLUMN LAYOUT (used on all pages) ── */
+.three-col{display:flex;flex:1;overflow:hidden;}
+
+/* LEFT SIDEBAR */
+.sidebar{width:252px;background:var(--white);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;flex-shrink:0;}
+.sidebar::-webkit-scrollbar{width:3px;}
+.sidebar::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+
+.sb-section{padding:14px 16px;border-bottom:1px solid var(--border-soft);}
+.sb-title{font-family:'Fraunces',serif;font-size:13px;font-weight:700;color:var(--earth);margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+
+/* Snap stats */
+.snap-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+.snap{background:var(--sky);border:1px solid var(--border);border-radius:10px;padding:10px;cursor:pointer;transition:all 0.15s;}
+.snap:hover{border-color:var(--earth-light);background:var(--sky-deep);}
+.snap-icon{font-size:18px;margin-bottom:4px;}
+.snap-val{font-family:'Fraunces',serif;font-size:18px;font-weight:700;color:var(--earth);line-height:1;}
+.snap-val.warn{color:var(--soil);}
+.snap-val.risk{color:var(--risk);}
+.snap-val.ok{color:var(--earth-light);}
+.snap-name{font-size:10px;color:var(--text-soft);margin-top:2px;font-weight:500;}
+.snap-trend{font-size:9px;font-weight:700;margin-top:3px;}
+.snap-trend.down{color:var(--risk);}
+.snap-trend.up{color:var(--earth-light);}
+
+/* Show toggles */
+.tog-row{display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid var(--sky-deep);cursor:pointer;}
+.tog-row:last-child{border-bottom:none;}
+.tog-emoji{font-size:16px;width:22px;text-align:center;}
+.tog-text{flex:1;}
+.tog-name{font-size:12px;font-weight:600;color:var(--text);}
+.tog-sub{font-size:10px;color:var(--text-soft);margin-top:1px;}
+.tog{width:30px;height:16px;background:var(--border);border-radius:8px;position:relative;cursor:pointer;transition:background 0.2s;flex-shrink:0;}
+.tog.on{background:var(--earth-light);}
+.tog::after{content:'';position:absolute;width:11px;height:11px;background:white;border-radius:50%;top:2.5px;left:2.5px;transition:left 0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.2);}
+.tog.on::after{left:17px;}
+
+/* Alert pills in sidebar */
+.alert-pill{display:flex;align-items:flex-start;gap:8px;padding:9px 10px;border-radius:10px;margin-bottom:6px;cursor:pointer;transition:all 0.15s;border:1px solid transparent;}
+.alert-pill.risk{background:var(--risk-soft);border-color:rgba(217,95,69,0.25);}
+.alert-pill.warn{background:var(--sun-soft);border-color:rgba(245,200,66,0.3);}
+.alert-pill.good{background:#F0FAF0;border-color:rgba(125,191,94,0.3);}
+.alert-pill:hover{transform:translateX(2px);}
+.ap-icon{font-size:16px;flex-shrink:0;margin-top:1px;}
+.ap-title{font-size:11px;font-weight:700;color:var(--text);line-height:1.3;}
+.ap-sub{font-size:10px;color:var(--text-soft);margin-top:2px;line-height:1.4;}
+
+/* Plan cards in sidebar */
+.plan-mini{background:var(--sky);border:1.5px solid var(--border);border-radius:10px;padding:11px;margin-bottom:7px;cursor:pointer;transition:all 0.15s;}
+.plan-mini.chosen{border-color:var(--earth);background:var(--white);box-shadow:0 2px 10px rgba(45,74,34,0.1);}
+.plan-mini:hover:not(.chosen){border-color:var(--earth-light);}
+.pm-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;}
+.pm-name{font-size:12px;font-weight:700;color:var(--earth);}
+.pm-badge{font-size:9px;padding:2px 7px;border-radius:8px;font-weight:700;}
+.pm-badge.active{background:var(--earth);color:white;}
+.pm-badge.draft{background:var(--border);color:var(--text-mid);}
+.pm-desc{font-size:11px;color:var(--text-soft);line-height:1.5;}
+.new-plan-btn{width:100%;padding:10px;border:1.5px dashed var(--border);border-radius:10px;background:transparent;color:var(--text-soft);font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:all 0.15s;display:flex;align-items:center;justify-content:center;gap:5px;}
+.new-plan-btn:hover{border-color:var(--earth-light);color:var(--earth);background:var(--sky);}
+
+/* Docs in sidebar */
+.doc-item{display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid var(--sky-deep);cursor:pointer;}
+.doc-item:last-child{border-bottom:none;}
+.doc-icon{font-size:20px;flex-shrink:0;}
+.doc-title{font-size:11px;font-weight:600;color:var(--earth);}
+.doc-meta{font-size:10px;color:var(--text-soft);margin-top:1px;}
+.doc-tag{font-size:9px;padding:1px 6px;border-radius:6px;font-weight:700;margin-top:3px;display:inline-block;}
+.doc-tag.infra{background:#E8F0FD;color:#3A5AB8;}
+.doc-tag.env{background:#EFF9EB;color:var(--earth);}
+.doc-tag.social{background:#F5EDF8;color:#7B3A9B;}
+.doc-tag.econ{background:var(--sun-soft);color:#7A5800;}
+
+/* ── MAP CENTER ── */
+.map-col{flex:1;position:relative;overflow:hidden;}
+.map-svg{position:absolute;inset:0;width:100%;height:100%;}
+
+.map-alert-bar{position:absolute;top:12px;left:50%;transform:translateX(-50%);background:var(--sun-soft);border:1.5px solid var(--sun);border-radius:12px;padding:8px 16px;display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:#7A5800;box-shadow:0 2px 12px rgba(245,200,66,0.2);z-index:20;white-space:nowrap;cursor:pointer;}
+.map-alert-bar.risk-bar{background:var(--risk-soft);border-color:var(--risk);color:#8B2A1E;}
+
+/* Map overlays */
+.map-overlay{position:absolute;inset:0;pointer-events:none;z-index:5;}
+
+.zone-card{position:absolute;background:var(--white);border-radius:14px;padding:16px;width:210px;box-shadow:0 6px 28px rgba(45,74,34,0.16);border:1px solid var(--border);z-index:30;animation:popIn 0.3s cubic-bezier(0.34,1.56,0.64,1);}
+@keyframes popIn{from{opacity:0;transform:scale(0.9);}to{opacity:1;transform:scale(1);}}
+.zc-icon{font-size:26px;margin-bottom:7px;}
+.zc-title{font-family:'Fraunces',serif;font-size:14px;font-weight:700;color:var(--earth);}
+.zc-sub{font-size:11px;color:var(--text-soft);margin-bottom:10px;margin-top:2px;}
+.zc-row{display:flex;justify-content:space-between;font-size:11px;padding:4px 0;border-bottom:1px solid var(--sky);}
+.zc-row:last-of-type{border-bottom:none;}
+.zc-row span:first-child{color:var(--text-soft);}
+.zc-row span:last-child{font-weight:600;color:var(--earth);}
+.zc-row span.warn{color:var(--soil);}
+.zc-row span.risk{color:var(--risk);}
+.zc-btn{margin-top:10px;width:100%;padding:8px;background:var(--earth);color:white;border:none;border-radius:9px;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:background 0.15s;}
+.zc-btn:hover{background:var(--earth-mid);}
+
+.zoom-wrap{position:absolute;bottom:16px;left:12px;display:flex;flex-direction:column;gap:4px;z-index:20;}
+.zoom-btn{width:34px;height:34px;background:var(--white);border:1px solid var(--border);border-radius:9px;font-size:17px;font-weight:700;color:var(--earth);cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.07);transition:all 0.15s;}
+.zoom-btn:hover{background:var(--sky);}
+
+.map-key{position:absolute;bottom:14px;right:12px;background:var(--white);border:1px solid var(--border);border-radius:11px;padding:10px 13px;box-shadow:0 2px 8px rgba(0,0,0,0.06);z-index:20;}
+.mk-title{font-size:9px;font-weight:700;color:var(--text-mid);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;}
+.mk-item{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-mid);margin-bottom:4px;}
+.mk-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0;}
+
+/* ── AI ADVISOR (right) ── */
+.advisor{width:288px;background:var(--white);border-left:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;}
+.adv-head{padding:14px 16px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+.adv-av{width:36px;height:36px;background:linear-gradient(135deg,var(--earth),var(--earth-light));border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
+.adv-name{font-family:'Fraunces',serif;font-size:14px;font-weight:700;color:var(--earth);}
+.adv-role{font-size:10px;color:var(--text-soft);margin-top:1px;}
+.adv-live{margin-left:auto;display:flex;align-items:center;gap:4px;font-size:10px;color:var(--earth-light);font-weight:700;}
+.adv-dot{width:6px;height:6px;background:var(--leaf);border-radius:50%;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+
+.chat-msgs{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:10px;background:var(--sky);}
+.chat-msgs::-webkit-scrollbar{width:3px;}
+.chat-msgs::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+
+.bub{max-width:90%;display:flex;flex-direction:column;gap:3px;}
+.bub.ai{align-self:flex-start;}
+.bub.me{align-self:flex-end;}
+.bub-from{font-size:9px;font-weight:700;color:var(--text-soft);padding:0 4px;}
+.bub-txt{padding:10px 12px;border-radius:13px;font-size:12px;line-height:1.6;}
+.bub.ai .bub-txt{background:var(--white);border:1px solid var(--border);border-bottom-left-radius:3px;color:var(--text);}
+.bub.me .bub-txt{background:var(--earth);color:white;border-bottom-right-radius:3px;}
+.tag{display:inline-block;padding:2px 7px;border-radius:7px;font-size:9px;font-weight:700;margin-bottom:4px;}
+.tag.warn{background:var(--sun-soft);color:#7A5800;border:1px solid var(--sun);}
+.tag.risk{background:var(--risk-soft);color:#8B2A1E;border:1px solid var(--risk);}
+.tag.good{background:#EAF4E8;color:var(--earth);border:1px solid var(--leaf);}
+.tag.info{background:var(--water-soft);color:#1A4F72;border:1px solid var(--water);}
+
+/* Upload panel in chat */
+.upload-panel{background:var(--white);border:1.5px dashed var(--border);border-radius:12px;padding:12px;margin:0 12px;cursor:pointer;transition:all 0.2s;display:none;}
+.upload-panel.show{display:block;}
+.upload-panel:hover{border-color:var(--earth-light);background:var(--sky);}
+.up-inner{display:flex;flex-direction:column;align-items:center;gap:6px;}
+.up-icon{font-size:28px;}
+.up-title{font-size:12px;font-weight:700;color:var(--earth);text-align:center;}
+.up-sub{font-size:11px;color:var(--text-soft);text-align:center;line-height:1.4;}
+.up-form{width:100%;display:flex;flex-direction:column;gap:6px;margin-top:8px;}
+.up-select{width:100%;background:var(--sky);border:1px solid var(--border);border-radius:8px;padding:7px 10px;font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;color:var(--text);outline:none;}
+.up-select:focus{border-color:var(--earth-light);}
+.up-file-btn{width:100%;padding:8px;background:var(--earth);color:white;border:none;border-radius:9px;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:background 0.15s;}
+.up-file-btn:hover{background:var(--earth-mid);}
+.up-file-input{display:none;}
+
+.uploaded-doc{background:var(--sky);border:1px solid var(--border);border-radius:9px;padding:8px 10px;margin:6px 12px 0;display:flex;align-items:center;gap:8px;animation:fadeIn 0.3s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
+.ud-icon{font-size:18px;flex-shrink:0;}
+.ud-title{font-size:11px;font-weight:600;color:var(--earth);flex:1;}
+.ud-meta{font-size:10px;color:var(--text-soft);}
+.ud-remove{font-size:14px;color:var(--text-soft);cursor:pointer;flex-shrink:0;padding:2px;}
+.ud-remove:hover{color:var(--risk);}
+
+.quick-qs{padding:7px 12px;border-top:1px solid var(--border);display:flex;flex-wrap:wrap;gap:5px;background:var(--white);}
+.qq-lbl{width:100%;font-size:9px;color:var(--text-soft);font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:1px;}
+.qq{padding:5px 10px;border:1.5px solid var(--border);border-radius:20px;font-size:11px;color:var(--text-mid);cursor:pointer;transition:all 0.15s;background:var(--sky);font-weight:500;}
+.qq:hover{border-color:var(--earth);color:var(--earth);background:var(--sky-deep);}
+
+.chat-bar{padding:9px 12px;border-top:1px solid var(--border);display:flex;gap:7px;background:var(--white);align-items:center;}
+.chat-in{flex:1;background:var(--sky);border:1.5px solid var(--border);border-radius:11px;padding:8px 12px;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;color:var(--text);outline:none;transition:border 0.15s;}
+.chat-in::placeholder{color:var(--text-soft);}
+.chat-in:focus{border-color:var(--earth-light);background:var(--white);}
+.send-btn{width:34px;height:34px;background:var(--earth);border:none;border-radius:10px;color:white;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.15s;flex-shrink:0;}
+.send-btn:hover{background:var(--earth-mid);}
+
+/* Upload trigger btn in chat bar */
+.attach-btn{width:34px;height:34px;background:var(--sky);border:1.5px solid var(--border);border-radius:10px;color:var(--earth-light);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s;flex-shrink:0;}
+.attach-btn:hover{background:var(--sky-deep);border-color:var(--earth-light);}
+.attach-btn.active{background:var(--earth-light);border-color:var(--earth);color:white;}
+
+/* ── SHARED PAGE COMPONENTS ── */
+.page-content{flex:1;display:flex;flex-direction:column;overflow:hidden;position:relative;}
+.page-banner{padding:12px 16px;background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-shrink:0;}
+.pb-title{font-family:'Fraunces',serif;font-size:16px;font-weight:700;color:var(--earth);}
+.pb-sub{font-size:12px;color:var(--text-soft);margin-top:1px;}
+.pb-badge{margin-left:auto;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;}
+.pb-badge.risk{background:var(--risk-soft);color:var(--risk);}
+.pb-badge.warn{background:var(--sun-soft);color:#7A5800;}
+.pb-badge.good{background:#EAF4E8;color:var(--earth);}
+
+/* Map with page-specific overlay */
+.map-frame{position:relative;flex:1;overflow:hidden;}
+
+/* Progress bars */
+.prog{margin-bottom:10px;}
+.prog-top{display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px;}
+.prog-name{font-weight:600;color:var(--text);}
+.prog-val{color:var(--text-soft);}
+.prog-bar{height:7px;background:var(--sky-deep);border-radius:4px;overflow:hidden;}
+.prog-fill{height:100%;border-radius:4px;}
+.prog-note{font-size:10px;color:var(--text-soft);margin-top:3px;}
+
+/* Bottombar */
+.bottombar{height:28px;background:var(--earth);display:flex;align-items:center;padding:0 20px;gap:16px;flex-shrink:0;}
+.bot-i{display:flex;align-items:center;gap:5px;font-size:10px;color:rgba(234,244,224,0.6);}
+.bot-dot{width:5px;height:5px;border-radius:50%;background:var(--leaf);}
+.bot-dot.warn{background:var(--sun);}
+.bot-r{margin-left:auto;font-size:10px;color:rgba(234,244,224,0.35);font-family:'Fraunces',serif;font-style:italic;}
+
+/* MOBILE RESPONSIVE STYLES */
+@media (max-width: 768px) {
+  /* Hide desktop overflow on body */
+  body{overflow-x:hidden;height:auto;min-height:100vh;}
+  
+  /* Mobile navigation */
+  .topnav{padding:0 12px;gap:8px;height:48px;}
+  .logo{font-size:16px;}
+  .county-pill{font-size:11px;padding:4px 10px;}
+  .nav-right{gap:8px;}
+  .plan-badge{display:none;}
+  .upload-btn{padding:4px 10px;font-size:11px;}
+  .gov-chip{display:none;}
+  
+  /* Mobile hamburger menu */
+  .mobile-menu-btn{display:flex;align-items:center;justify-content:center;width:32px;height:32px;background:transparent;border:none;color:var(--sky);font-size:18px;cursor:pointer;}
+  .mobile-menu-btn:hover{color:var(--white);}
+  
+  /* Mobile tabs */
+  .tabbar{padding:0 8px;gap:2px;}
+  .tab{padding:10px 12px;font-size:11px;gap:4px;}
+  
+  /* Mobile three-column layout */
+  .three-col{flex-direction:column;}
+  .sidebar{width:100%;max-height:40vh;border-right:none;border-bottom:1px solid var(--border);order:1;}
+  .map-col{min-height:50vh;order:2;}
+  .advisor{width:100%;border-left:none;border-top:1px solid var(--border);order:3;min-height:40vh;}
+  
+  /* Mobile sidebar adjustments */
+  .sb-section{padding:10px 12px;}
+  .sb-title{font-size:12px;margin-bottom:8px;}
+  .snap-grid{grid-template-columns:1fr 1fr;gap:6px;}
+  .snap{padding:8px;}
+  .snap-icon{font-size:16px;}
+  .snap-val{font-size:16px;}
+  .snap-name{font-size:9px;}
+  .snap-trend{font-size:8px;}
+  
+  /* Mobile toggles */
+  .tog-row{padding:6px 0;}
+  .tog-emoji{font-size:14px;width:20px;}
+  .tog-name{font-size:11px;}
+  .tog-sub{font-size:9px;}
+  .tog{width:26px;height:14px;}
+  .tog::after{width:9px;height:9px;top:2.5px;left:2.5px;}
+  .tog.on::after{left:14.5px;}
+  
+  /* Mobile alerts */
+  .alert-pill{padding:8px 9px;margin-bottom:5px;}
+  .ap-icon{font-size:14px;}
+  .ap-title{font-size:10px;}
+  .ap-sub{font-size:9px;}
+  
+  /* Mobile map */
+  .map-svg{border-radius:8px;}
+  .map-alert-bar{top:8px;left:8px;right:8px;transform:none;font-size:11px;padding:6px 12px;white-space:normal;line-height:1.4;}
+  .zone-card{width:180px;padding:12px;}
+  .zc-icon{font-size:20px;margin-bottom:5px;}
+  .zc-title{font-size:12px;}
+  .zc-sub{font-size:10px;margin-bottom:8px;}
+  .zc-row{font-size:10px;padding:3px 0;}
+  .zc-btn{margin-top:8px;padding:6px;font-size:11px;}
+  .zoom-wrap{bottom:8px;left:8px;}
+  .zoom-btn{width:30px;height:30px;font-size:15px;}
+  .map-key{bottom:8px;right:8px;padding:8px 10px;}
+  .mk-title{font-size:8px;}
+  .mk-item{font-size:10px;}
+  
+  /* Mobile advisor */
+  .adv-head{padding:10px 12px;}
+  .adv-av{width:32px;height:32px;font-size:15px;}
+  .adv-name{font-size:12px;}
+  .adv-role{font-size:9px;}
+  .chat-msgs{padding:8px;}
+  .bub{max-width:95%;}
+  .bub-txt{font-size:11px;padding:8px 10px;}
+  .bub-from{font-size:8px;}
+  .tag{font-size:8px;padding:1px 5px;margin-bottom:3px;}
+  .upload-panel{margin:0 8px;padding:10px;}
+  .up-icon{font-size:24px;}
+  .up-title{font-size:11px;}
+  .up-sub{font-size:10px;}
+  .quick-qs{padding:5px 8px;}
+  .qq{padding:4px 8px;font-size:10px;}
+  .chat-bar{padding:6px 8px;}
+  .chat-in{font-size:11px;padding:6px 10px;}
+  .send-btn,.attach-btn{width:30px;height:30px;font-size:13px;}
+  
+  /* Mobile plan cards */
+  .plan-mini{padding:8px 10px;margin-bottom:6px;}
+  .pm-name{font-size:11px;}
+  .pm-badge{font-size:8px;padding:1px 5px;}
+  .pm-desc{font-size:10px;}
+  .new-plan-btn{padding:8px;font-size:11px;}
+  
+  /* Mobile bottom bar */
+  .bottombar{padding:0 12px;gap:8px;height:24px;}
+  .bot-i{font-size:9px;}
+  .bot-r{font-size:9px;}
+}
+
+@media (max-width: 480px) {
+  /* Extra small mobile adjustments */
+  .topnav{padding:0 8px;height:44px;}
+  .logo{font-size:14px;}
+  .county-pill{font-size:10px;padding:3px 8px;}
+  .upload-btn{padding:3px 8px;font-size:10px;}
+  .tab{padding:8px 10px;font-size:10px;}
+  
+  .snap-grid{gap:4px;}
+  .snap{padding:6px;}
+  .snap-icon{font-size:14px;}
+  .snap-val{font-size:14px;}
+  .snap-name{font-size:8px;}
+  
+  .zone-card{width:160px;padding:10px;}
+  .zc-icon{font-size:18px;}
+  .zc-title{font-size:11px;}
+  .zc-sub{font-size:9px;}
+  .zc-row{font-size:9px;}
+  .zc-btn{font-size:10px;}
+  
+  .adv-head{padding:8px 10px;}
+  .adv-av{width:28px;height:28px;font-size:13px;}
+  .adv-name{font-size:11px;}
+  .adv-role{font-size:8px;}
+  
+  .chat-msgs{padding:6px;}
+  .bub-txt{font-size:10px;padding:6px 8px;}
+  
+  .map-alert-bar{font-size:10px;padding:5px 8px;}
+  .map-key{padding:6px 8px;}
+}
+
+/* Mobile menu overlay styles */
+.mobile-menu-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:1000;display:none;opacity:0;transition:opacity 0.3s;}
+.mobile-menu-overlay.show{display:block;opacity:1;}
+.mobile-menu-content{background:var(--white);height:100%;width:280px;max-width:85%;transform:translateX(-100%);transition:transform 0.3s;box-shadow:2px 0 10px rgba(0,0,0,0.1);}
+.mobile-menu-overlay.show .mobile-menu-content{transform:translateX(0);}
+.mobile-menu-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);background:var(--earth);}
+.mobile-menu-header .logo{color:var(--sky);font-size:18px;}
+.mobile-menu-header .mobile-menu-btn{color:var(--sky);}
+.mobile-menu-body{padding:20px 0;overflow-y:auto;max-height:calc(100vh - 70px);}
+.mobile-nav-section{margin-bottom:24px;}
+.mobile-nav-title{font-family:'Fraunces',serif;font-size:12px;font-weight:700;color:var(--text-soft);text-transform:uppercase;letter-spacing:0.8px;padding:0 20px;margin-bottom:12px;}
+.mobile-nav-item{padding:12px 20px;font-size:14px;font-weight:500;color:var(--text);cursor:pointer;transition:background 0.15s;display:flex;align-items:center;gap:10px;}
+.mobile-nav-item:hover{background:var(--sky);}
+.mobile-nav-item:active{background:var(--sky-deep);}
+
+/* Desktop-only styles */
+@media (min-width: 769px) {
+  .mobile-menu-btn{display:none;}
+  .mobile-menu-overlay{display:none;}
+}
+
+</style>
+</head>
+<body>
+
+<!-- TOPNAV -->
+<div class="topnav">
+  <button class="mobile-menu-btn" onclick="toggleMobileMenu()">??</button>
+  <div class="logo">?? Mazingira</div>
+  <div class="county-pill">???
+    <select>
+      <option>Nairobi County</option>
+      <option>Mombasa County</option>
+      <option>Kisumu County</option>
+      <option>Nakuru County</option>
+      <option>Kiambu County</option>
+    </select>
+  </div>
+
+  <div class="nav-right">
+    <div class="plan-badge">📅 Balanced Growth · 2035</div>
+
+    <!-- Upload document button -->
+    <label class="upload-btn" onclick="triggerUpload(event)">
+      📎 Upload a report
+      <input type="file" id="global-file-input" accept=".pdf,.docx,.xlsx,.csv" style="display:none" onchange="handleFileUpload(this)">
+    </label>
+
+    <div class="gov-chip">
+      <div class="gov-avatar">HE</div>
+      <div class="gov-info">
+        <div class="gov-name">H.E. Governor</div>
+        <div class="gov-role">Nairobi County</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MOBILE MENU OVERLAY -->
+<div class="mobile-menu-overlay" id="mobileMenu">
+  <div class="mobile-menu-content">
+    <div class="mobile-menu-header">
+      <div class="logo">?? Mazingira</div>
+      <button class="mobile-menu-btn" onclick="toggleMobileMenu()">??</button>
+    </div>
+    <div class="mobile-menu-body">
+      <div class="mobile-nav-section">
+        <div class="mobile-nav-title">Navigation</div>
+        <div class="mobile-nav-item" onclick="showPage('county'); toggleMobileMenu()">?? County Overview</div>
+        <div class="mobile-nav-item" onclick="showPage('roads'); toggleMobileMenu()">?? Roads & Buildings</div>
+        <div class="mobile-nav-item" onclick="showPage('nature'); toggleMobileMenu()">?? Nature & Water</div>
+        <div class="mobile-nav-item" onclick="showPage('people'); toggleMobileMenu()">?? People & Services</div>
+        <div class="mobile-nav-item" onclick="showPage('economy'); toggleMobileMenu()">?? Jobs & Business</div>
+        <div class="mobile-nav-item" onclick="showPage('future'); toggleMobileMenu()">?? Future Plans</div>
+      </div>
+      <div class="mobile-nav-section">
+        <div class="mobile-nav-title">Quick Actions</div>
+        <div class="mobile-nav-item" onclick="document.getElementById('global-file-input').click(); toggleMobileMenu()">?? Upload Report</div>
+        <div class="mobile-nav-item">?? Governor Profile</div>
+        <div class="mobile-nav-item">?? Settings</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabbar">
+  <div class="tab active" onclick="showPage('county')">🗺 County Overview</div>
+  <div class="tab" onclick="showPage('roads')">🏗 Roads & Buildings</div>
+  <div class="tab" onclick="showPage('nature')">🌳 Nature & Water</div>
+  <div class="tab" onclick="showPage('people')">👩‍👩‍👦 People & Services</div>
+  <div class="tab" onclick="showPage('economy')">💼 Jobs & Business</div>
+  <div class="tab" onclick="showPage('future')">🔮 Future Plans</div>
+</div>
+
+<div class="app-body">
+
+<!-- ══════════════════════════════════
+     REUSABLE MAP SVG (injected per page via JS)
+     PAGE 1: COUNTY OVERVIEW
+══════════════════════════════════ -->
+<div class="page active" id="page-county">
+  <div class="three-col">
+
+    <!-- LEFT SIDEBAR -->
+    <div class="sidebar">
+      <div class="sb-section">
+        <div class="sb-title">📊 County at a Glance</div>
+        <div class="snap-grid">
+          <div class="snap"><div class="snap-icon">👥</div><div class="snap-val">4.9M</div><div class="snap-name">People</div><div class="snap-trend up">↑ Growing</div></div>
+          <div class="snap"><div class="snap-icon">🌳</div><div class="snap-val warn">12%</div><div class="snap-name">Green cover</div><div class="snap-trend down">↓ Too low</div></div>
+          <div class="snap"><div class="snap-icon">🚰</div><div class="snap-val warn">74%</div><div class="snap-name">Clean water</div><div class="snap-trend down">↓ Slipping</div></div>
+          <div class="snap"><div class="snap-icon">🛣</div><div class="snap-val ok">68%</div><div class="snap-name">Roads covered</div><div class="snap-trend up">↑ Improving</div></div>
+        </div>
+      </div>
+
+      <div class="sb-section">
+        <div class="sb-title">👁 What to show on the map</div>
+        <div class="tog-row"><div class="tog-emoji">🌿</div><div class="tog-text"><div class="tog-name">Parks & forests</div><div class="tog-sub">Green open spaces</div></div><div class="tog on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="tog-row"><div class="tog-emoji">🌊</div><div class="tog-text"><div class="tog-name">Flood-prone areas</div><div class="tog-sub">Places at risk of flooding</div></div><div class="tog on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="tog-row"><div class="tog-emoji">💧</div><div class="tog-text"><div class="tog-name">Rivers & water pipes</div><div class="tog-sub">Water supply network</div></div><div class="tog on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="tog-row"><div class="tog-emoji">🏪</div><div class="tog-text"><div class="tog-name">Markets & businesses</div><div class="tog-sub">Economic activity</div></div><div class="tog" onclick="this.classList.toggle('on')"></div></div>
+        <div class="tog-row"><div class="tog-emoji">🏥</div><div class="tog-text"><div class="tog-name">Hospitals & schools</div><div class="tog-sub">Public services</div></div><div class="tog on" onclick="this.classList.toggle('on')"></div></div>
+      </div>
+
+      <div class="sb-section" style="padding-bottom:14px">
+        <div class="sb-title">🚨 Needs Your Attention</div>
+        <div class="alert-pill risk"><div class="ap-icon">🌊</div><div><div class="ap-title">Mathare flood risk — 42,000 people</div><div class="ap-sub">Drainage is only 31% ready for 2030</div></div></div>
+        <div class="alert-pill warn"><div class="ap-icon">🌳</div><div><div class="ap-title">Tree cover dropping fast</div><div class="ap-sub">Now 12% — target is 20%</div></div></div>
+        <div class="alert-pill warn"><div class="ap-icon">🚰</div><div><div class="ap-title">Water access falling</div><div class="ap-sub">Down from 76% to 74% this year</div></div></div>
+      </div>
+    </div>
+
+    <!-- MAP -->
+    <div class="map-col" id="map-county">
+      <svg class="map-svg" viewBox="0 0 900 600" preserveAspectRatio="xMidYMid slice">
+        <rect width="900" height="600" fill="#D4EBBC"/>
+        <polygon points="100,70 800,50 860,180 840,530 560,560 220,550 90,400 70,200" fill="#C4E0A8" stroke="#98C878" stroke-width="2"/>
+        <polygon points="100,70 450,55 470,260 100,280" fill="#B4D498" stroke="#88B860" stroke-width="1" opacity="0.9"/>
+        <polygon points="450,55 800,70 820,270 470,260" fill="#EDD498" stroke="#C8A850" stroke-width="1" opacity="0.8"/>
+        <polygon points="90,280 470,260 450,520 110,510" fill="#A8C8E0" stroke="#70A8CC" stroke-width="1" opacity="0.8"/>
+        <polygon points="470,260 820,270 800,530 450,520" fill="#C8C0DC" stroke="#9888C0" stroke-width="1" opacity="0.7"/>
+        <line x1="100" y1="180" x2="830" y2="180" stroke="white" stroke-width="3.5" opacity="0.7"/>
+        <line x1="460" y1="55" x2="460" y2="555" stroke="white" stroke-width="3.5" opacity="0.7"/>
+        <line x1="100" y1="380" x2="840" y2="390" stroke="white" stroke-width="2" opacity="0.5"/>
+        <line x1="260" y1="70" x2="240" y2="540" stroke="white" stroke-width="1.5" opacity="0.4"/>
+        <line x1="650" y1="55" x2="660" y2="540" stroke="white" stroke-width="1.5" opacity="0.4"/>
+        <path d="M 120 300 Q 260 318 380 290 Q 500 262 640 308 Q 760 348 840 318" fill="none" stroke="#5A9CC0" stroke-width="4.5" opacity="0.7"/>
+        <circle cx="195" cy="140" r="28" fill="#68B048" opacity="0.55"/>
+        <circle cx="232" cy="118" r="22" fill="#4A8030" opacity="0.5"/>
+        <circle cx="168" cy="122" r="20" fill="#78C058" opacity="0.55"/>
+        <circle cx="674" cy="418" r="35" fill="#68B048" opacity="0.5"/>
+        <circle cx="714" cy="442" r="26" fill="#4A8030" opacity="0.48"/>
+        <ellipse cx="388" cy="322" rx="85" ry="56" fill="rgba(217,95,69,0.22)" stroke="#D95F45" stroke-width="2" stroke-dasharray="8,5"/>
+        <circle cx="388" cy="322" r="10" fill="#D95F45"/><circle cx="388" cy="322" r="18" fill="none" stroke="#D95F45" stroke-width="2" opacity="0.5"/>
+        <circle cx="310" cy="148" r="9" fill="#F5C842"/><circle cx="310" cy="148" r="17" fill="none" stroke="#F5C842" stroke-width="2" opacity="0.5"/>
+        <circle cx="590" cy="178" r="9" fill="#5A8A42"/><circle cx="590" cy="178" r="17" fill="none" stroke="#5A8A42" stroke-width="2" opacity="0.5"/>
+        <circle cx="220" cy="400" r="8" fill="#4A90B8"/><circle cx="622" cy="422" r="8" fill="#5A8A42"/>
+        <rect x="128" y="90" width="100" height="44" rx="8" fill="white" opacity="0.8"/>
+        <text x="178" y="110" font-family="Plus Jakarta Sans" font-size="11" font-weight="700" fill="#2D4A22" text-anchor="middle">Westlands</text>
+        <text x="178" y="126" font-family="Plus Jakarta Sans" font-size="10" fill="#7A9B70" text-anchor="middle">Green Zone 🌿</text>
+        <rect x="555" y="96" width="104" height="44" rx="8" fill="white" opacity="0.8"/>
+        <text x="607" y="116" font-family="Plus Jakarta Sans" font-size="11" font-weight="700" fill="#7A5800" text-anchor="middle">Eastlands</text>
+        <text x="607" y="132" font-family="Plus Jakarta Sans" font-size="10" fill="#B08040" text-anchor="middle">Business Zone 💼</text>
+        <rect x="294" y="354" width="96" height="44" rx="8" fill="white" opacity="0.8"/>
+        <text x="342" y="374" font-family="Plus Jakarta Sans" font-size="11" font-weight="700" fill="#2C5F7A" text-anchor="middle">Kibera</text>
+        <text x="342" y="390" font-family="Plus Jakarta Sans" font-size="10" fill="#5A90B0" text-anchor="middle">Needs Support 👐</text>
+        <rect x="576" y="412" width="98" height="44" rx="8" fill="white" opacity="0.8"/>
+        <text x="625" y="432" font-family="Plus Jakarta Sans" font-size="11" font-weight="700" fill="#2D4A22" text-anchor="middle">Lang'ata</text>
+        <text x="625" y="448" font-family="Plus Jakarta Sans" font-size="10" fill="#7A9B70" text-anchor="middle">Green Belt 🌳</text>
+        <rect x="316" y="280" width="144" height="26" rx="7" fill="#FDECEA" opacity="0.95"/>
+        <text x="388" y="297" font-family="Plus Jakarta Sans" font-size="11" font-weight="700" fill="#C04030" text-anchor="middle">⚠️ Flood Risk — Mathare</text>
+      </svg>
+
+      <div class="map-alert-bar">⚠️ <strong>Governor's alert:</strong> Mathare flood risk affects 42,000 residents — tap for briefing</div>
+
+      <div class="zone-card" style="top:38%;left:56%">
+        <div class="zc-icon">⚠️</div>
+        <div class="zc-title">Mathare — Flood Risk Zone</div>
+        <div class="zc-sub">Central Nairobi · Urgent</div>
+        <div class="zc-row"><span>People at risk</span><span class="risk">~42,000</span></div>
+        <div class="zc-row"><span>Drainage ready</span><span class="warn">31% only</span></div>
+        <div class="zc-row"><span>Risk by 2030</span><span class="risk">Very high</span></div>
+        <div class="zc-row"><span>Action status</span><span class="warn">Pending approval</span></div>
+        <button class="zc-btn" onclick="showPage('nature')">See full recommendation →</button>
+      </div>
+
+      <div class="zoom-wrap"><div class="zoom-btn">+</div><div class="zoom-btn">−</div></div>
+      <div class="map-key">
+        <div class="mk-title">What the colours mean</div>
+        <div class="mk-item"><div class="mk-dot" style="background:#B4D498"></div>Parks & forests</div>
+        <div class="mk-item"><div class="mk-dot" style="background:#EDD498"></div>Business areas</div>
+        <div class="mk-item"><div class="mk-dot" style="background:#A8C8E0"></div>Residential</div>
+        <div class="mk-item"><div class="mk-dot" style="background:#D95F45;opacity:0.8"></div>Flood risk</div>
+      </div>
+    </div>
+
+    <!-- AI ADVISOR -->
+    <div class="advisor" id="adv-county">
+      <div class="adv-head">
+        <div class="adv-av">🤖</div>
+        <div><div class="adv-name">Mazingira Assistant</div><div class="adv-role">Governor's planning guide</div></div>
+        <div class="adv-live"><div class="adv-dot"></div>Live</div>
+      </div>
+      <div class="chat-msgs" id="chat-county">
+        <div class="bub ai"><div class="bub-from">Mazingira Assistant</div>
+          <div class="bub-txt"><span class="tag warn">⚠️ Priority briefing</span><br>Good morning, Your Excellency. Three issues need your attention today:<br><br>🌊 <strong>Mathare flood risk</strong> — 42,000 residents at high risk by 2030. Drainage upgrade needs your sign-off.<br>🌳 <strong>Tree cover at 12%</strong> — half the healthy target. The Green First plan scores highest.<br>🚰 <strong>Water access dropping</strong> — 26,000 fewer people with clean water than last year.</div></div>
+        <div class="bub me"><div class="bub-from">You</div><div class="bub-txt">What should I prioritise this week?</div></div>
+        <div class="bub ai"><div class="bub-from">Mazingira Assistant</div>
+          <div class="bub-txt"><span class="tag good">✅ Recommended action</span><br>This week, approve the <strong>Mathare drainage fast-track</strong>. It protects 42,000 people before the next rainy season and costs <strong>KSh 340M</strong> — far less than post-flood disaster response.<br><br>I can generate the briefing document for Cabinet if you'd like.</div></div>
+      </div>
+      <div class="upload-panel" id="up-panel-county">
+        <div class="up-inner">
+          <div class="up-icon">📂</div>
+          <div class="up-title">Upload a departmental report</div>
+          <div class="up-sub">The AI will read it and give you a plain-English briefing</div>
+          <div class="up-form">
+            <select class="up-select" id="up-dept-county"><option value="">Select department…</option><option>Environment</option><option>Roads & Infrastructure</option><option>Water & Sanitation</option><option>Health</option><option>Education</option><option>Finance & Budget</option><option>Planning</option><option>Agriculture</option></select>
+            <select class="up-select" id="up-subj-county"><option value="">Select subject…</option><option>Annual Report</option><option>Budget Proposal</option><option>Project Status</option><option>Risk Assessment</option><option>Policy Brief</option><option>Audit Report</option></select>
+            <label class="up-file-btn">Choose file (PDF, Word, Excel)<input type="file" class="up-file-input" accept=".pdf,.docx,.xlsx,.csv" onchange="handleUploadFromPanel(this,'county')"></label>
+          </div>
+        </div>
+      </div>
+      <div id="docs-county"></div>
+      <div class="quick-qs">
+        <div class="qq-lbl">Ask me about…</div>
+        <div class="qq" onclick="sendQuick(this,'county')">📋 Generate Cabinet brief</div>
+        <div class="qq" onclick="sendQuick(this,'county')">🌿 Compare the 3 plans</div>
+        <div class="qq" onclick="sendQuick(this,'county')">💰 What can we afford?</div>
+        <div class="qq" onclick="sendQuick(this,'county')">⚖️ Are we meeting the law?</div>
+      </div>
+      <div class="chat-bar">
+        <button class="attach-btn" id="attach-county" onclick="toggleUpload('county')" title="Upload a document">📎</button>
+        <input class="chat-in" id="input-county" placeholder="Ask anything, Your Excellency…" onkeydown="if(event.key==='Enter')sendMsg('county')">
+        <button class="send-btn" onclick="sendMsg('county')">↑</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════ PAGE 2: ROADS & BUILDINGS ══════ -->
+<div class="page" id="page-roads">
+  <div class="three-col">
+    <div class="sidebar">
+      <div class="sb-section">
+        <div class="sb-title">🏗 Infrastructure Summary</div>
+        <div class="snap-grid">
+          <div class="snap"><div class="snap-icon">🛣</div><div class="snap-val ok">68%</div><div class="snap-name">Roads paved</div><div class="snap-trend up">↑ On track</div></div>
+          <div class="snap"><div class="snap-icon">🏘</div><div class="snap-val warn">52%</div><div class="snap-name">Safe housing</div><div class="snap-trend down">↓ Needs work</div></div>
+          <div class="snap"><div class="snap-icon">🏗</div><div class="snap-val ok">142</div><div class="snap-name">Active projects</div><div class="snap-trend up">↑ +18 new</div></div>
+          <div class="snap"><div class="snap-icon">💡</div><div class="snap-val warn">71%</div><div class="snap-name">Streets lit</div><div class="snap-trend up">↑ Improving</div></div>
+        </div>
+      </div>
+      <div class="sb-section">
+        <div class="sb-title">👁 Show on map</div>
+        <div class="tog-row"><div class="tog-emoji">🛣</div><div class="tog-text"><div class="tog-name">Road conditions</div><div class="tog-sub">Good, fair and poor roads</div></div><div class="tog on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="tog-row"><div class="tog-emoji">🏗</div><div class="tog-text"><div class="tog-name">Construction sites</div><div class="tog-sub">Active projects</div></div><div class="tog on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="tog-row"><div class="tog-emoji">🏘</div><div class="tog-text"><div class="tog-name">Informal housing</div><div class="tog-sub">Areas needing upgrade</div></div><div class="tog" onclick="this.classList.toggle('on')"></div></div>
+        <div class="tog-row"><div class="tog-emoji">🌉</div><div class="tog-text"><div class="tog-name">Bridges & crossings</div><div class="tog-sub">Key connections</div></div><div class="tog on" onclick="this.classList.toggle('on')"></div></div>
+      </div>
+      <div class="sb-section" style="padding-bottom:14px">
+        <div class="sb-title">🚨 Urgent decisions</div>
+        <div class="alert-pill risk"><div class="ap-icon">🚧</div><div><div class="ap-title">Outer Ring Road — pothole crisis</div><div class="ap-sub">Delays ambulances, affects 120,000 daily</div></div></div>
+        <div class="alert-pill warn"><div class="ap-icon">🏚</div><div><div class="ap-title">Mathare housing — overcrowded</div><div class="ap-sub">Density 3× above healthy levels</div></div></div>
+        <div class="alert-pill good"><div class="ap-icon">🏫</div><div><div class="ap-title">Kibera school — 78% complete</div><div class="ap-sub">On track to open March 2026</div></div></div>
+        <div class="alert-pill good"><div class="ap-icon">🌉</div><div><div class="ap-title">Mathare footbridge — 91% done</div><div class="ap-sub">Opens next month</div></div></div>
+      </div>
+    </div>
+
+    <!-- MAP with infrastructure overlay -->
+    <div class="map-col">
+      <svg class="map-svg" viewBox="0 0 900 600" preserveAspectRatio="xMidYMid slice">
+        <rect width="900" height="600" fill="#D4EBBC"/>
+        <polygon points="100,70 800,50 860,180 840,530 560,560 220,550 90,400 70,200" fill="#C8DDB8" stroke="#98C878" stroke-width="2"/>
+        <polygon points="100,70 450,55 470,260 100,280" fill="#C0D4AA" stroke="#88B860" stroke-width="1" opacity="0.9"/>
+        <polygon points="450,55 800,70 820,270 470,260" fill="#E8D498" stroke="#C8A850" stroke-width="1" opacity="0.8"/>
+        <polygon points="90,280 470,260 450,520 110,510" fill="#A8C8E0" stroke="#70A8CC" stroke-width="1" opacity="0.8"/>
+        <polygon points="470,260 820,270 800,530 450,520" fill="#C8C0DC" stroke="#9888C0" stroke-width="1" opacity="0.7"/>
+        <!-- Road quality overlays -->
+        <line x1="100" y1="180" x2="450" y2="180" stroke="#5A8A42" stroke-width="5" opacity="0.6"/>
+        <line x1="450" y1="180" x2="640" y2="180" stroke="#F5C842" stroke-width="5" opacity="0.6"/>
+        <line x1="640" y1="180" x2="830" y2="180" stroke="#D95F45" stroke-width="5" opacity="0.6"/>
+        <line x1="460" y1="55" x2="460" y2="280" stroke="#5A8A42" stroke-width="4" opacity="0.5"/>
+        <line x1="460" y1="280" x2="460" y2="555" stroke="#F5C842" stroke-width="4" opacity="0.5"/>
+        <line x1="100" y1="380" x2="840" y2="390" stroke="#C17B3A" stroke-width="3" opacity="0.4" stroke-dasharray="8,4"/>
+        <!-- Construction sites -->
+        <rect x="150" y="130" width="20" height="20" rx="4" fill="#F5C842" opacity="0.9"/>
+        <text x="160" y="145" font-family="Plus Jakarta Sans" font-size="12" text-anchor="middle">🏗</text>
+        <rect x="430" y="360" width="20" height="20" rx="4" fill="#F5C842" opacity="0.9"/>
+        <text x="440" y="375" font-family="Plus Jakarta Sans" font-size="12" text-anchor="middle">🏗</text>
+        <rect x="580" y="150" width="20" height="20" rx="4" fill="#5A8A42" opacity="0.9"/>
+        <text x="590" y="165" font-family="Plus Jakarta Sans" font-size="12" text-anchor="middle">✅</text>
+        <path d="M 120 300 Q 260 318 380 290 Q 500 262 640 308 Q 760 348 840 318" fill="none" stroke="#5A9CC0" stroke-width="4" opacity="0.6"/>
+        <!-- Labels -->
+        <rect x="200" y="154" width="130" height="26" rx="7" fill="white" opacity="0.88"/>
+        <text x="265" y="171" font-family="Plus Jakarta Sans" font-size="10" font-weight="700" fill="#D95F45" text-anchor="middle">⚠️ Outer Ring Road — urgent fix</text>
+        <rect x="128" y="90" width="100" height="44" rx="8" fill="white" opacity="0.8"/>
+        <text x="178" y="110" font-family="Plus Jakarta Sans" font-size="11" font-weight="700" fill="#2D4A22" text-anchor="middle">Westlands</text>
+        <text x="178" y="126" font-family="Plus Jakarta Sans" font-size="10" fill="#7A9B70" text-anchor="middle">Road: Good 🟢</text>
+        <rect x="555" y="96" width="104" height="44" rx="8" fill="white" opacity="0.8"/>
+        <text x="607" y="116" font-family="Plus Jakarta Sans" font-size="11" font-weight="700" fill="#7A5800" text-anchor="middle">Eastlands</text>
+        <text x="607" y="132" font-family="Plus Jakarta Sans" font-size="10" fill="#D95F45" text-anchor="middle">Road: Poor 🔴</text>
+        <rect x="294" y="354" width="96" height="44" rx="8" fill="white" opacity="0.8"/>
+        <text x="342" y="374" font-family="Plus Jakarta Sans" font-size="11" font-weight="700" fill="#2C5F7A" text-anchor="middle">Kibera</text>
+        <text x="342" y="390" font-family="Plus Jakarta Sans" font-size="10" fill="#B08040" text-anchor="middle">School: 78% done 🏗</text>
+        <!-- Road quality legend -->
+        <rect x="20" y="200" width="76" height="76" rx="8" fill="white" opacity="0.88"/>
+        <text x="33" y="218" font-family="Plus Jakarta Sans" font-size="9" font-weight="700" fill="#4A6340">Road Quality</text>
+        <line x1="30" y1="230" x2="50" y2="230" stroke="#5A8A42" stroke-width="3"/><text x="55" y="234" font-family="Plus Jakarta Sans" font-size="9" fill="#4A6340">Good</text>
+        <line x1="30" y1="246" x2="50" y2="246" stroke="#F5C842" stroke-width="3"/><text x="55" y="250" font-family="Plus Jakarta Sans" font-size="9" fill="#4A6340">Fair</text>
+        <line x1="30" y1="262" x2="50" y2="262" stroke="#D95F45" stroke-width="3"/><text x="55" y="266" font-family="Plus Jakarta Sans" font-size="9" fill="#4A6340">Needs fix</text>
+      </svg>
+      <div class="map-alert-bar warn-bar" style="background:var(--sun-soft);border-color:var(--sun);color:#7A5800">🚧 <strong>Decision needed:</strong> Outer Ring Road repair affects emergency routes — approve budget?</div>
+      <div class="zone-card" style="top:30%;left:56%">
+        <div class="zc-icon">🚧</div>
+        <div class="zc-title">Outer Ring Road</div>
+        <div class="zc-sub">Embakasi · Urgent repair needed</div>
+        <div class="zc-row"><span>Length affected</span><span class="risk">3.2km</span></div>
+        <div class="zc-row"><span>Daily users</span><span>~120,000</span></div>
+        <div class="zc-row"><span>Ambulance impact</span><span class="risk">+18 min delay</span></div>
+        <div class="zc-row"><span>Repair cost</span><span class="warn">KSh 280M</span></div>
+        <button class="zc-btn" onclick="sendQuick2('roads','Approve Outer Ring Road repair budget')">Approve & brief the team →</button>
+      </div>
+      <div class="zoom-wrap"><div class="zoom-btn">+</div><div class="zoom-btn">−</div></div>
+      <div class="map-key">
+        <div class="mk-title">Road condition</div>
+        <div class="mk-item"><div class="mk-dot" style="background:#5A8A42"></div>Good roads</div>
+        <div class="mk-item"><div class="mk-dot" style="background:#F5C842"></div>Fair — needs monitoring</div>
+        <div class="mk-item"><div class="mk-dot" style="background:#D95F45"></div>Poor — fix urgently</div>
+        <div class="mk-item"><div style="font-size:12px">🏗</div>Under construction</div>
+      </div>
+    </div>
+
+    <div class="advisor">
+      <div class="adv-head"><div class="adv-av">🤖</div><div><div class="adv-name">Mazingira Assistant</div><div class="adv-role">Roads & Buildings briefing</div></div><div class="adv-live"><div class="adv-dot"></div>Live</div></div>
+      <div class="chat-msgs" id="chat-roads">
+        <div class="bub ai"><div class="bub-from">Mazingira Assistant</div>
+          <div class="bub-txt"><span class="tag risk">🚨 Needs decision today</span><br>Your Excellency, the <strong>Outer Ring Road</strong> situation is now critical. The 3.2km damaged section is adding 18 minutes to ambulance routes — this is a direct health risk.<br><br>Approving the <strong>KSh 280M repair</strong> today means work begins within 2 weeks.</div></div>
+        <div class="bub ai"><div class="bub-from">Mazingira Assistant</div>
+          <div class="bub-txt"><span class="tag good">✅ Good news</span><br>The <strong>Mathare footbridge</strong> is 91% complete — it opens next month and will serve 15,000 daily pedestrians. Worth a launch event?</div></div>
+      </div>
+      <div class="upload-panel" id="up-panel-roads">
+        <div class="up-inner">
+          <div class="up-icon">📂</div>
+          <div class="up-title">Upload a roads department report</div>
+          <div class="up-sub">The AI will summarise it for you in plain English</div>
+          <div class="up-form">
+            <select class="up-select" id="up-dept-roads"><option value="">Select department…</option><option>Roads & Infrastructure</option><option>Housing</option><option>Transport</option><option>Finance & Budget</option></select>
+            <select class="up-select" id="up-subj-roads"><option value="">Select subject…</option><option>Project Status</option><option>Budget Proposal</option><option>Audit Report</option><option>Risk Assessment</option></select>
+            <label class="up-file-btn">Choose file (PDF, Word, Excel)<input type="file" class="up-file-input" accept=".pdf,.docx,.xlsx,.csv" onchange="handleUploadFromPanel(this,'roads')"></label>
+          </div>
+        </div>
+      </div>
+      <div id="docs-roads"></div>
+      <div class="quick-qs">
+        <div class="qq-lbl">Quick questions</div>
+        <div class="qq" onclick="sendQuick(this,'roads')">🛣 Which roads are worst?</div>
+        <div class="qq" onclick="sendQuick(this,'roads')">💰 What's in the budget?</div>
+        <div class="qq" onclick="sendQuick(this,'roads')">🏗 Projects behind schedule?</div>
+      </div>
+      <div class="chat-bar">
+        <button class="attach-btn" id="attach-roads" onclick="toggleUpload('roads')">📎</button>
+        <input class="chat-in" id="input-roads" placeholder="Ask about roads & buildings…" onkeydown="if(event.key==='Enter')sendMsg('roads')">
+        <button class="send-btn" onclick="sendMsg('roads')">↑</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ PAGE 3: NATURE & WATER ══════ -->
+<div class="page" id="page-nature">
+  <div class="three-col">
+    <div class="sidebar">
+      <div class="sb-section">
+        <div class="sb-title">🌳 Nature Summary</div>
+        <div class="snap-grid">
+          <div class="snap"><div class="snap-icon">🌳</div><div class="snap-val risk">12%</div><div class="snap-name">Tree cover</div><div class="snap-trend down">↓ Target: 20%</div></div>
+          <div class="snap"><div class="snap-icon">🚰</div><div class="snap-val warn">74%</div><div class="snap-name">Clean water</div><div class="snap-trend down">↓ Falling</div></div>
+          <div class="snap"><div class="snap-icon">🌊</div><div class="snap-val risk">High</div><div class="snap-name">Flood risk</div><div class="snap-trend down">↓ Worsening</div></div>
+          <div class="snap"><div class="snap-icon">🏞</div><div class="snap-val ok">61%</div><div class="snap-name">Wetlands safe</div><div class="snap-trend up">↑ Holding</div></div>
+        </div>
+      </div>
+      <div class="sb-section">
+        <div class="sb-title">👁 Show on map</div>
+        <div class="tog-row"><div class="tog-emoji">🌿</div><div class="tog-text"><div class="tog-name">Forests & parks</div><div class="tog-sub">Protected green areas</div></div><div class="tog on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="tog-row"><div class="tog-emoji">🌊</div><div class="tog-text"><div class="tog-name">Flood zones</div><div class="tog-sub">Areas at flooding risk</div></div><div class="tog on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="tog-row"><div class="tog-emoji">💧</div><div class="tog-text"><div class="tog-name">Rivers & wetlands</div><div class="tog-sub">Natural water bodies</div></div><div class="tog on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="tog-row"><div class="tog-emoji">🌡</div><div class="tog-text"><div class="tog-name">Urban heat areas</div><div class="tog-sub">Hottest parts of the county</div></div><div class="tog" onclick="this.classList.toggle('on')"></div></div>
+      </div>
+      <div class="sb-section" style="padding-bottom:14px">
+        <div class="sb-title">🚨 Nature emergencies</div>
+        <div class="alert-pill risk"><div class="ap-icon">🌊</div><div><div class="ap-title">Mathare flooding — 42,000 at risk</div><div class="ap-sub">Drainage only 31% ready for 2030</div></div></div>
+        <div class="alert-pill risk"><div class="ap-icon">🌳</div><div><div class="ap-title">Tree cover at 12% — half the target</div><div class="ap-sub">Could drop to 8% under current plan</div></div></div>
+        <div class="alert-pill warn"><div class="ap-icon">🏭</div><div><div class="ap-title">3 factories polluting Nairobi River</div><div class="ap-sub">NEMA compliance action needed</div></div></div>
+        <div class="alert-pill good"><div class="ap-icon">🌳</div><div><div class="ap-title">312,000 trees planted so far</div><div class="ap-sub">Million trees campaign — on track</div></div></div>
+      </div>
+    </div>
+
+    <!-- MAP with nature overlay -->
+    <div class="map-col">
+      <svg class="map-svg" viewBox="0 0 900 600" preserveAspectRatio="xMidYMid slice">
+        <rect width="900" height="600" fill="#C8E4B4"/>
+        <polygon points="100,70 800,50 860,180 840,530 560,560 220,550 90,400 70,200" fill="#B8D8A0" stroke="#88B860" stroke-width="2"/>
+        <!-- Heat map overlay -->
+        <ellipse cx="460" cy="200" rx="180" ry="130" fill="rgba(245,166,66,0.15)"/>
+        <ellipse cx="460" cy="200" rx="100" ry="70" fill="rgba(245,120,66,0.12)"/>
+        <!-- Green zones — forest patches -->
+        <circle cx="180" cy="130" r="50" fill="#5A9040" opacity="0.45"/>
+        <circle cx="210" cy="110" r="35" fill="#3D7030" opacity="0.4"/>
+        <circle cx="158" cy="150" r="30" fill="#6EAA50" opacity="0.45"/>
+        <circle cx="670" cy="420" r="60" fill="#5A9040" opacity="0.42"/>
+        <circle cx="710" cy="450" r="40" fill="#3D7030" opacity="0.4"/>
+        <circle cx="640" cy="445" r="30" fill="#6EAA50" opacity="0.42"/>
+        <!-- Nairobi National Park -->
+        <ellipse cx="200" cy="480" rx="100" ry="55" fill="#4A8030" opacity="0.35" stroke="#3D7030" stroke-width="1.5" stroke-dasharray="6,4"/>
+        <text x="200" y="484" font-family="Plus Jakarta Sans" font-size="10" font-weight="700" fill="#2D4A22" text-anchor="middle">🦁 Nairobi National Park</text>
+        <!-- River -->
+        <path d="M 120 300 Q 260 318 380 290 Q 500 262 640 308 Q 760 348 840 318" fill="none" stroke="#2A6898" stroke-width="5" opacity="0.65"/>
+        <path d="M 120 303 Q 260 321 380 293 Q 500 265 640 311 Q 760 351 840 321" fill="none" stroke="#70B8DC" stroke-width="2.5" opacity="0.4"/>
+        <!-- Flood zone -->
+        <ellipse cx="388" cy="322" rx="90" ry="60" fill="rgba(217,95,69,0.28)" stroke="#D95F45" stroke-width="2" stroke-dasharray="8,5"/>
+        <text x="388" y="297" font-family="Plus Jakarta Sans" font-size="11" font-weight="700" fill="#C04030" text-anchor="middle">⚠️ Flood Risk Zone</text>
+        <!-- Tree loss zone -->
+        <ellipse cx="550" cy="180" rx="100" ry="60" fill="rgba(193,123,58,0.18)" stroke="#C17B3A" stroke-width="1.5" stroke-dasharray="6,4"/>
+        <text x="550" y="175" font-family="Plus Jakarta Sans" font-size="10" font-weight="700" fill="#8B4A10" text-anchor="middle">🌲 Tree loss area</text>
+        <!-- Roads faint -->
+        <line x1="100" y1="180" x2="830" y2="180" stroke="white" stroke-width="2.5" opacity="0.5"/>
+        <line x1="460" y1="55" x2="460" y2="555" stroke="white" stroke-width="2.5" opacity="0.5"/>
+        <!-- Labels -->
+        <rect x="128" y="90" width="100" height="40" rx="8" fill="white" opacity="0.85"/>
+        <text x="178" y="108" font-family="Plus Jakarta Sans" font-size="11" font-weight="700" fill="#2D4A22" text-anchor="middle">Westlands</text>
+        <text x="178" y="123" font-family="Plus Jakarta Sans" font-size="10" fill="#7A9B70" text-anchor="middle">Best tree cover 🌳</text>
+        <rect x="576" y="412" width="98" height="40" rx="8" fill="white" opacity="0.85"/>
+        <text x="625" y="430" font-family="Plus Jakarta Sans" font-size="11" font-weight="700" fill="#2D4A22" text-anchor="middle">Lang'ata</text>
+        <text x="625" y="445" font-family="Plus Jakarta Sans" font-size="10" fill="#7A9B70" text-anchor="middle">Protected belt 🛡</text>
+      </svg>
+      <div class="map-alert-bar risk-bar">🌊 <strong>Flood risk is growing.</strong> Nairobi River restoration is only 40% done — rainy season in 6 weeks.</div>
+      <div class="zone-card" style="top:35%;left:54%">
+        <div class="zc-icon">🌊</div>
+        <div class="zc-title">Nairobi River — Flood Zone</div>
+        <div class="zc-sub">Mathare & Westlands corridor</div>
+        <div class="zc-row"><span>River restored</span><span class="warn">40% complete</span></div>
+        <div class="zc-row"><span>People at risk</span><span class="risk">42,000</span></div>
+        <div class="zc-row"><span>Rainy season</span><span class="risk">6 weeks away</span></div>
+        <div class="zc-row"><span>Budget needed</span><span class="warn">KSh 480M</span></div>
+        <button class="zc-btn">Fast-track approval →</button>
+      </div>
+      <div class="zoom-wrap"><div class="zoom-btn">+</div><div class="zoom-btn">−</div></div>
+      <div class="map-key">
+        <div class="mk-title">Nature overview</div>
+        <div class="mk-item"><div class="mk-dot" style="background:#5A9040"></div>Forests & parks</div>
+        <div class="mk-item"><div class="mk-dot" style="background:#2A6898"></div>Rivers & wetlands</div>
+        <div class="mk-item"><div class="mk-dot" style="background:#D95F45;opacity:0.8"></div>Flood risk zones</div>
+        <div class="mk-item"><div class="mk-dot" style="background:#F5A642;opacity:0.7"></div>Urban heat areas</div>
+      </div>
+    </div>
+
+    <div class="advisor">
+      <div class="adv-head"><div class="adv-av">🤖</div><div><div class="adv-name">Mazingira Assistant</div><div class="adv-role">Nature & Water briefing</div></div><div class="adv-live"><div class="adv-dot"></div>Live</div></div>
+      <div class="chat-msgs" id="chat-nature">
+        <div class="bub ai"><div class="bub-from">Mazingira Assistant</div>
+          <div class="bub-txt"><span class="tag risk">🌊 6 weeks to rainy season</span><br>Your Excellency, the Nairobi River restoration is only <strong>40% complete</strong>. The remaining sections protect Mathare from severe flooding. Fast-tracking this is the single most important nature action before April.<br><br>Cost to finish Phase 2: <strong>KSh 480M</strong>. The cost of flood disaster response last year was <strong>KSh 1.8B</strong>.</div></div>
+        <div class="bub ai"><div class="bub-from">Mazingira Assistant</div>
+          <div class="bub-txt"><span class="tag good">🌳 Progress update</span><br>The million trees campaign has hit <strong>312,000 trees planted</strong> — 31% of target. At the current rate you'll reach the goal by 2027. Consider a public event to mark 500,000.</div></div>
+      </div>
+      <div class="upload-panel" id="up-panel-nature">
+        <div class="up-inner">
+          <div class="up-icon">📂</div>
+          <div class="up-title">Upload an environment report</div>
+          <div class="up-sub">NEMA reports, water audits, WRMA data — the AI will brief you</div>
+          <div class="up-form">
+            <select class="up-select" id="up-dept-nature"><option value="">Select department…</option><option>Environment</option><option>Water & Sanitation</option><option>Natural Resources</option><option>Climate & Resilience</option></select>
+            <select class="up-select" id="up-subj-nature"><option value="">Select subject…</option><option>NEMA Compliance Report</option><option>Water Quality Assessment</option><option>Flood Risk Study</option><option>Tree Cover Survey</option><option>Annual Environment Report</option></select>
+            <label class="up-file-btn">Choose file (PDF, Word, Excel)<input type="file" class="up-file-input" accept=".pdf,.docx,.xlsx,.csv" onchange="handleUploadFromPanel(this,'nature')"></label>
+          </div>
+        </div>
+      </div>
+      <div id="docs-nature"></div>
+      <div class="quick-qs">
+        <div class="qq-lbl">Quick questions</div>
+        <div class="qq" onclick="sendQuick(this,'nature')">🌊 What happens if we don't act?</div>
+        <div class="qq" onclick="sendQuick(this,'nature')">🌳 How do we get to 20% trees?</div>
+        <div class="qq" onclick="sendQuick(this,'nature')">⚖️ Are we NEMA compliant?</div>
+      </div>
+      <div class="chat-bar">
+        <button class="attach-btn" id="attach-nature" onclick="toggleUpload('nature')">📎</button>
+        <input class="chat-in" id="input-nature" placeholder="Ask about nature & water…" onkeydown="if(event.key==='Enter')sendMsg('nature')">
+        <button class="send-btn" onclick="sendMsg('nature')">↑</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ PAGE 4: PEOPLE & SERVICES ══════ -->
+<div class="page" id="page-people">
+  <div class="three-col">
+    <div class="sidebar">
+      <div class="sb-section">
+        <div class="sb-title">👩‍👩‍👦 People Summary</div>
+        <div class="snap-grid">
+          <div class="snap"><div class="snap-icon">🏥</div><div class="snap-val warn">71%</div><div class="snap-name">Near hospital</div><div class="snap-trend down">↓ Below target</div></div>
+          <div class="snap"><div class="snap-icon">🏫</div><div class="snap-val ok">84%</div><div class="snap-name">In school</div><div class="snap-trend up">↑ Good</div></div>
+          <div class="snap"><div class="snap-icon">♻️</div><div class="snap-val warn">59%</div><div class="snap-name">Waste collected</div><div class="snap-trend up">↑ Growing</div></div>
+          <div class="snap"><div class="snap-icon">💡</div><div class="snap-val warn">48%</div><div class="snap-name">Safe at night</div><div class="snap-trend down">↓ Needs work</div></div>
+        </div>
+      </div>
+      <div class="sb-section">
+        <div class="sb-title">👁 Show on map</div>
+        <div class="tog-row"><div class="tog-emoji">🏥</div><div class="tog-text"><div class="tog-name">Hospitals & clinics</div><div class="tog-sub">Public health facilities</div></div><div class="tog on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="tog-row"><div class="tog-emoji">🏫</div><div class="tog-text"><div class="tog-name">Schools</div><div class="tog-sub">Primary, secondary, colleges</div></div><div class="tog on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="tog-row"><div class="tog-emoji">🏘</div><div class="tog-text"><div class="tog-name">Informal settlements</div><div class="tog-sub">Areas needing most support</div></div><div class="tog on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="tog-row"><div class="tog-emoji">💡</div><div class="tog-text"><div class="tog-name">Unlit areas</div><div class="tog-sub">Safety black spots</div></div><div class="tog" onclick="this.classList.toggle('on')"></div></div>
+      </div>
+      <div class="sb-section" style="padding-bottom:14px">
+        <div class="sb-title">🚨 Urgent social issues</div>
+        <div class="alert-pill risk"><div class="ap-icon">🏥</div><div><div class="ap-title">3 wards — no hospital within 5km</div><div class="ap-sub">Ruai, Utawala, Embakasi North</div></div></div>
+        <div class="alert-pill warn"><div class="ap-icon">🏫</div><div><div class="ap-title">14,000 children without a school</div><div class="ap-sub">Athi River corridor — fast growth</div></div></div>
+        <div class="alert-pill warn"><div class="ap-icon">♻️</div><div><div class="ap-title">41% of homes have no rubbish collection</div><div class="ap-sub">Health risk — 12 wards affected</div></div></div>
+        <div class="alert-pill good"><div class="ap-icon">🏫</div><div><div class="ap-title">Kibera school opens March 2026</div><div class="ap-sub">600 pupils — worth a launch event</div></div></div>
+      </div>
+    </div>
+
+    <div class="map-col">
+      <svg class="map-svg" viewBox="0 0 900 600" preserveAspectRatio="xMidYMid slice">
+        <rect width="900" height="600" fill="#D0E8F0"/>
+        <polygon points="100,70 800,50 860,180 840,530 560,560 220,550 90,400 70,200" fill="#C0D8E8" stroke="#88B0CC" stroke-width="2"/>
+        <polygon points="100,70 450,55 470,260 100,280" fill="#B8D8A0" stroke="#88B860" stroke-width="1" opacity="0.7"/>
+        <polygon points="450,55 800,70 820,270 470,260" fill="#E8D498" stroke="#C8A850" stroke-width="1" opacity="0.7"/>
+        <polygon points="90,280 470,260 450,520 110,510" fill="#C0C8F0" stroke="#8888D0" stroke-width="1" opacity="0.8"/>
+        <polygon points="470,260 820,270 800,530 450,520" fill="#F0C8D0" stroke="#D08898" stroke-width="1" opacity="0.7"/>
+        <!-- No hospital zones highlighted -->
+        <ellipse cx="710" cy="420" rx="80" ry="55" fill="rgba(217,95,69,0.2)" stroke="#D95F45" stroke-width="1.5" stroke-dasharray="6,4"/>
+        <text x="710" y="416" font-family="Plus Jakarta Sans" font-size="10" font-weight="700" fill="#C04030" text-anchor="middle">❌ No hospital</text>
+        <text x="710" y="430" font-family="Plus Jakarta Sans" font-size="9" fill="#C04030" text-anchor="middle">within 5km</text>
+        <!-- Hospital dots -->
+        <circle cx="300" cy="180" r="10" fill="#D95F45"/><text x="300" y="185" font-family="Plus Jakarta Sans" font-size="12" text-anchor="middle">🏥</text>
+        <circle cx="480" cy="300" r="10" fill="#D95F45"/><text x="480" y="305" font-family="Plus Jakarta Sans" font-size="12" text-anchor="middle">🏥</text>
+        <!-- School dots -->
+        <text x="200" y="400" font-family="Plus Jakarta Sans" font-size="16" text-anchor="middle">🏫</text>
+        <text x="400" y="160" font-family="Plus Jakarta Sans" font-size="16" text-anchor="middle">🏫</text>
+        <text x="600" y="240" font-family="Plus Jakarta Sans" font-size="16" text-anchor="middle">🏫</text>
+        <text x="350" y="450" font-family="Plus Jakarta Sans" font-size="16" text-anchor="middle">🏫</text>
+        <!-- School under construction -->
+        <circle cx="340" cy="390" r="8" fill="#F5C842"/>
+        <text x="340" y="395" font-family="Plus Jakarta Sans" font-size="10" text-anchor="middle">🏗</text>
+        <rect x="282" y="406" width="116" height="22" rx="6" fill="#FDF8E6" opacity="0.95"/>
+        <text x="340" y="421" font-family="Plus Jakarta Sans" font-size="9" font-weight="700" fill="#7A5800" text-anchor="middle">Kibera school — opens 2026</text>
+        <!-- River faint -->
+        <path d="M 120 300 Q 260 318 380 290 Q 500 262 640 308 Q 760 348 840 318" fill="none" stroke="#5A9CC0" stroke-width="3" opacity="0.5"/>
+        <line x1="100" y1="180" x2="830" y2="180" stroke="white" stroke-width="2.5" opacity="0.5"/>
+        <line x1="460" y1="55" x2="460" y2="555" stroke="white" stroke-width="2.5" opacity="0.5"/>
+        <rect x="128" y="90" width="100" height="40" rx="8" fill="white" opacity="0.85"/>
+        <text x="178" y="108" font-family="Plus Jakarta Sans" font-size="11" font-weight="700" fill="#2D4A22" text-anchor="middle">Westlands</text>
+        <text x="178" y="123" font-family="Plus Jakarta Sans" font-size="10" fill="#5A90B0" text-anchor="middle">Services: Good ✅</text>
+        <rect x="294" y="354" width="96" height="40" rx="8" fill="white" opacity="0.85"/>
+        <text x="342" y="372" font-family="Plus Jakarta Sans" font-size="11" font-weight="700" fill="#5050A0" text-anchor="middle">Kibera</text>
+        <text x="342" y="387" font-family="Plus Jakarta Sans" font-size="10" fill="#8070C0" text-anchor="middle">Most underserved 🔴</text>
+      </svg>
+      <div class="map-alert-bar risk-bar">🏥 <strong>3 wards have no hospital within 5km.</strong> This affects 320,000 residents. See recommendation.</div>
+      <div class="zone-card" style="top:28%;right:14%;left:auto">
+        <div class="zc-icon">🏥</div>
+        <div class="zc-title">Utawala — No Hospital</div>
+        <div class="zc-sub">East Nairobi · Service gap</div>
+        <div class="zc-row"><span>Residents affected</span><span class="risk">~180,000</span></div>
+        <div class="zc-row"><span>Nearest hospital</span><span class="risk">8.4km away</span></div>
+        <div class="zc-row"><span>Emergency risk</span><span class="risk">Critical</span></div>
+        <div class="zc-row"><span>Proposed solution</span><span style="color:var(--earth-light);font-weight:600">Level 4 centre</span></div>
+        <button class="zc-btn">Start planning process →</button>
+      </div>
+      <div class="zoom-wrap"><div class="zoom-btn">+</div><div class="zoom-btn">−</div></div>
+      <div class="map-key">
+        <div class="mk-title">Services map</div>
+        <div class="mk-item"><div style="font-size:12px">🏥</div>Hospital / clinic</div>
+        <div class="mk-item"><div style="font-size:12px">🏫</div>School</div>
+        <div class="mk-item"><div class="mk-dot" style="background:#D95F45;opacity:0.7"></div>No hospital within 5km</div>
+      </div>
+    </div>
+
+    <div class="advisor">
+      <div class="adv-head"><div class="adv-av">🤖</div><div><div class="adv-name">Mazingira Assistant</div><div class="adv-role">People & Services briefing</div></div><div class="adv-live"><div class="adv-dot"></div>Live</div></div>
+      <div class="chat-msgs" id="chat-people">
+        <div class="bub ai"><div class="bub-from">Mazingira Assistant</div>
+          <div class="bub-txt"><span class="tag risk">🏥 Health gap — urgent</span><br>Your Excellency, <strong>Ruai, Utawala and Embakasi North</strong> have a combined population of 320,000 with no public hospital within 5km.<br><br>The AI recommends a new Level 4 facility in Utawala as the highest-impact social investment for this term.</div></div>
+        <div class="bub ai"><div class="bub-from">Mazingira Assistant</div>
+          <div class="bub-txt"><span class="tag good">🎓 Great milestone</span><br>Kibera Primary School opens in <strong>March 2026</strong> — 600 new pupils. This is worth a gubernatorial launch event. I can draft a press release if you'd like.</div></div>
+      </div>
+      <div class="upload-panel" id="up-panel-people">
+        <div class="up-inner">
+          <div class="up-icon">📂</div>
+          <div class="up-title">Upload a social sector report</div>
+          <div class="up-sub">Health, education or welfare reports — the AI will summarise key findings</div>
+          <div class="up-form">
+            <select class="up-select" id="up-dept-people"><option value="">Select department…</option><option>Health</option><option>Education</option><option>Social Services</option><option>Youth & Gender</option></select>
+            <select class="up-select" id="up-subj-people"><option value="">Select subject…</option><option>Annual Report</option><option>Facility Assessment</option><option>Budget Proposal</option><option>Community Needs Survey</option></select>
+            <label class="up-file-btn">Choose file (PDF, Word, Excel)<input type="file" class="up-file-input" accept=".pdf,.docx,.xlsx,.csv" onchange="handleUploadFromPanel(this,'people')"></label>
+          </div>
+        </div>
+      </div>
+      <div id="docs-people"></div>
+      <div class="quick-qs">
+        <div class="qq-lbl">Quick questions</div>
+        <div class="qq" onclick="sendQuick(this,'people')">🏥 Where to build next hospital?</div>
+        <div class="qq" onclick="sendQuick(this,'people')">📣 Draft press release</div>
+        <div class="qq" onclick="sendQuick(this,'people')">👧 Most at-risk communities?</div>
+      </div>
+      <div class="chat-bar">
+        <button class="attach-btn" id="attach-people" onclick="toggleUpload('people')">📎</button>
+        <input class="chat-in" id="input-people" placeholder="Ask about people & services…" onkeydown="if(event.key==='Enter')sendMsg('people')">
+        <button class="send-btn" onclick="sendMsg('people')">↑</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ PAGE 5: JOBS & BUSINESS ══════ -->
+<div class="page" id="page-economy">
+  <div class="three-col">
+    <div class="sidebar">
+      <div class="sb-section">
+        <div class="sb-title">💼 Economic Summary</div>
+        <div class="snap-grid">
+          <div class="snap"><div class="snap-icon">💼</div><div class="snap-val warn">38%</div><div class="snap-name">Formal jobs</div><div class="snap-trend down">↓ Too low</div></div>
+          <div class="snap"><div class="snap-icon">🏭</div><div class="snap-val ok">240</div><div class="snap-name">Companies</div><div class="snap-trend up">↑ Growing</div></div>
+          <div class="snap"><div class="snap-icon">👩‍💼</div><div class="snap-val warn">44%</div><div class="snap-name">Women-owned biz</div><div class="snap-trend up">↑ Up 2%</div></div>
+          <div class="snap"><div class="snap-icon">🎓</div><div class="snap-val risk">41%</div><div class="snap-name">Youth unemployed</div><div class="snap-trend down">↓ Worsening</div></div>
+        </div>
+      </div>
+      <div class="sb-section">
+        <div class="sb-title">👁 Show on map</div>
+        <div class="tog-row"><div class="tog-emoji">🏭</div><div class="tog-text"><div class="tog-name">Industrial zones</div><div class="tog-sub">Factories & manufacturing</div></div><div class="tog on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="tog-row"><div class="tog-emoji">🏪</div><div class="tog-text"><div class="tog-name">Markets & trade areas</div><div class="tog-sub">Where commerce happens</div></div><div class="tog on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="tog-row"><div class="tog-emoji">🖥</div><div class="tog-text"><div class="tog-name">Tech & office hubs</div><div class="tog-sub">Knowledge economy areas</div></div><div class="tog" onclick="this.classList.toggle('on')"></div></div>
+        <div class="tog-row"><div class="tog-emoji">🌾</div><div class="tog-text"><div class="tog-name">Agricultural land</div><div class="tog-sub">Farms on county borders</div></div><div class="tog" onclick="this.classList.toggle('on')"></div></div>
+      </div>
+      <div class="sb-section" style="padding-bottom:14px">
+        <div class="sb-title">💡 Opportunities</div>
+        <div class="alert-pill good"><div class="ap-icon">🏭</div><div><div class="ap-title">Ruiru Industrial Park — ready now</div><div class="ap-sub">120 ha available · 8,000 jobs potential</div></div></div>
+        <div class="alert-pill warn"><div class="ap-icon">🏪</div><div><div class="ap-title">Gikomba market — flood risk</div><div class="ap-sub">KSh 2B trade at risk · needs relocation</div></div></div>
+        <div class="alert-pill good"><div class="ap-icon">🖥</div><div><div class="ap-title">Westlands tech hub booming</div><div class="ap-sub">240 companies · needs better internet</div></div></div>
+        <div class="alert-pill warn"><div class="ap-icon">🎨</div><div><div class="ap-title">Kariokor creative market</div><div class="ap-sub">KSh 80M funding gap for upgrade</div></div></div>
+      </div>
+    </div>
+
+    <div class="map-col">
+      <svg class="map-svg" viewBox="0 0 900 600" preserveAspectRatio="xMidYMid slice">
+        <rect width="900" height="600" fill="#EEE8CC"/>
+        <polygon points="100,70 800,50 860,180 840,530 560,560 220,550 90,400 70,200" fill="#E4D8A8" stroke="#C8A850" stroke-width="2"/>
+        <!-- Economic zones coloured -->
+        <polygon points="100,70 450,55 470,260 100,280" fill="#C4D898" stroke="#88B860" stroke-width="1" opacity="0.8"/>
+        <polygon points="450,55 800,70 820,270 470,260" fill="#F0C870" stroke="#D8A030" stroke-width="1" opacity="0.8"/>
+        <polygon points="90,280 470,260 450,520 110,510" fill="#D0D8F0" stroke="#8898D0" stroke-width="1" opacity="0.7"/>
+        <polygon points="470,260 820,270 800,530 450,520" fill="#E8C0A0" stroke="#C09080" stroke-width="1" opacity="0.7"/>
+        <!-- Industrial zones -->
+        <rect x="600" y="60" width="80" height="60" rx="6" fill="rgba(193,123,58,0.35)" stroke="#C17B3A" stroke-width="1.5"/>
+        <text x="640" y="86" font-family="Plus Jakarta Sans" font-size="10" font-weight="700" fill="#8B4A10" text-anchor="middle">🏭 Ruiru</text>
+        <text x="640" y="100" font-family="Plus Jakarta Sans" font-size="9" fill="#8B4A10" text-anchor="middle">Industrial Park</text>
+        <text x="640" y="113" font-family="Plus Jakarta Sans" font-size="9" fill="#5A8A42" text-anchor="middle">8,000 jobs ready</text>
+        <!-- Tech hub -->
+        <rect x="120" y="100" width="78" height="50" rx="6" fill="rgba(74,144,184,0.25)" stroke="#4A90B8" stroke-width="1.5"/>
+        <text x="159" y="122" font-family="Plus Jakarta Sans" font-size="10" font-weight="700" fill="#1A4F72" text-anchor="middle">🖥 Tech Hub</text>
+        <text x="159" y="137" font-family="Plus Jakarta Sans" font-size="9" fill="#1A4F72" text-anchor="middle">240 companies</text>
+        <!-- Gikomba market -->
+        <circle cx="420" cy="310" r="22" fill="rgba(217,95,69,0.2)" stroke="#D95F45" stroke-width="1.5" stroke-dasharray="5,3"/>
+        <text x="420" y="306" font-family="Plus Jakarta Sans" font-size="10" font-weight="700" fill="#C04030" text-anchor="middle">🏪 Gikomba</text>
+        <text x="420" y="320" font-family="Plus Jakarta Sans" font-size="9" fill="#C04030" text-anchor="middle">⚠️ Flood risk</text>
+        <!-- River -->
+        <path d="M 120 300 Q 260 318 380 290 Q 500 262 640 308 Q 760 348 840 318" fill="none" stroke="#5A9CC0" stroke-width="3.5" opacity="0.55"/>
+        <line x1="100" y1="180" x2="830" y2="180" stroke="white" stroke-width="2.5" opacity="0.5"/>
+        <line x1="460" y1="55" x2="460" y2="555" stroke="white" stroke-width="2.5" opacity="0.5"/>
+        <rect x="576" y="412" width="98" height="40" rx="8" fill="white" opacity="0.85"/>
+        <text x="625" y="430" font-family="Plus Jakarta Sans" font-size="11" font-weight="700" fill="#7A5800" text-anchor="middle">Athi River</text>
+        <text x="625" y="445" font-family="Plus Jakarta Sans" font-size="10" fill="#B08040" text-anchor="middle">Food hub proposed 🌾</text>
+      </svg>
+      <div class="map-alert-bar" style="background:var(--sun-soft);border-color:var(--sun);color:#7A5800">💼 <strong>Opportunity:</strong> Ruiru Industrial Park can create 8,000 jobs — approvals ready for sign-off.</div>
+      <div class="zone-card" style="top:35%;left:54%">
+        <div class="zc-icon">🏭</div>
+        <div class="zc-title">Ruiru Industrial Park</div>
+        <div class="zc-sub">North Nairobi · Ready to develop</div>
+        <div class="zc-row"><span>Land available</span><span style="color:var(--earth-light);font-weight:600">120 hectares</span></div>
+        <div class="zc-row"><span>Jobs projected</span><span style="color:var(--earth-light);font-weight:600">8,000 direct</span></div>
+        <div class="zc-row"><span>Revenue (10yr)</span><span style="color:var(--earth-light);font-weight:600">KSh 4.8B</span></div>
+        <div class="zc-row"><span>Approval status</span><span class="warn">Needs sign-off</span></div>
+        <button class="zc-btn">Approve & launch investor drive →</button>
+      </div>
+      <div class="zoom-wrap"><div class="zoom-btn">+</div><div class="zoom-btn">−</div></div>
+      <div class="map-key">
+        <div class="mk-title">Economic zones</div>
+        <div class="mk-item"><div class="mk-dot" style="background:#C17B3A;opacity:0.6"></div>Industrial areas</div>
+        <div class="mk-item"><div class="mk-dot" style="background:#4A90B8;opacity:0.5"></div>Tech & offices</div>
+        <div class="mk-item"><div class="mk-dot" style="background:#F5C842;opacity:0.6"></div>Markets & trade</div>
+        <div class="mk-item"><div class="mk-dot" style="background:#D95F45;opacity:0.5"></div>At-risk (flood)</div>
+      </div>
+    </div>
+
+    <div class="advisor">
+      <div class="adv-head"><div class="adv-av">🤖</div><div><div class="adv-name">Mazingira Assistant</div><div class="adv-role">Jobs & Business briefing</div></div><div class="adv-live"><div class="adv-dot"></div>Live</div></div>
+      <div class="chat-msgs" id="chat-economy">
+        <div class="bub ai"><div class="bub-from">Mazingira Assistant</div>
+          <div class="bub-txt"><span class="tag good">💼 Big opportunity</span><br>Your Excellency, Ruiru Industrial Park is ready. Fast-tracking the developer approvals by 6 months could unlock <strong>8,000 jobs</strong> before the 2027 election cycle — the single highest-impact economic decision available right now.</div></div>
+        <div class="bub ai"><div class="bub-from">Mazingira Assistant</div>
+          <div class="bub-txt"><span class="tag warn">⚠️ Risk to address</span><br>Gikomba Market — the largest informal market in East Africa — is in a flood-prone zone. With <strong>4,000 traders and KSh 2B</strong> in annual trade at risk, a relocation site needs to be identified before the 2026 rains.</div></div>
+      </div>
+      <div class="upload-panel" id="up-panel-economy">
+        <div class="up-inner">
+          <div class="up-icon">📂</div>
+          <div class="up-title">Upload an economic report</div>
+          <div class="up-sub">Investment proposals, trade data, budget docs — the AI will brief you</div>
+          <div class="up-form">
+            <select class="up-select" id="up-dept-economy"><option value="">Select department…</option><option>Finance & Budget</option><option>Trade & Commerce</option><option>Investment & Planning</option><option>Agriculture</option></select>
+            <select class="up-select" id="up-subj-economy"><option value="">Select subject…</option><option>Investment Proposal</option><option>Budget Review</option><option>Trade Report</option><option>Job Creation Plan</option></select>
+            <label class="up-file-btn">Choose file (PDF, Word, Excel)<input type="file" class="up-file-input" accept=".pdf,.docx,.xlsx,.csv" onchange="handleUploadFromPanel(this,'economy')"></label>
+          </div>
+        </div>
+      </div>
+      <div id="docs-economy"></div>
+      <div class="quick-qs">
+        <div class="qq-lbl">Quick questions</div>
+        <div class="qq" onclick="sendQuick(this,'economy')">💰 What's the best ROI?</div>
+        <div class="qq" onclick="sendQuick(this,'economy')">👩‍💼 How to support women traders?</div>
+        <div class="qq" onclick="sendQuick(this,'economy')">🎓 Reduce youth unemployment?</div>
+      </div>
+      <div class="chat-bar">
+        <button class="attach-btn" id="attach-economy" onclick="toggleUpload('economy')">📎</button>
+        <input class="chat-in" id="input-economy" placeholder="Ask about jobs & business…" onkeydown="if(event.key==='Enter')sendMsg('economy')">
+        <button class="send-btn" onclick="sendMsg('economy')">↑</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ PAGE 6: FUTURE PLANS ══════ -->
+<div class="page" id="page-future">
+  <div class="three-col">
+    <div class="sidebar">
+      <div class="sb-section">
+        <div class="sb-title">🔮 Choose your direction</div>
+        <div class="plan-mini chosen" onclick="selectPlan(this,'future')">
+          <div class="pm-top"><div class="pm-name">🌿 Balanced Growth</div><div class="pm-badge active">Active</div></div>
+          <div class="pm-desc">Grow carefully — new housing and jobs while protecting green spaces and water.</div>
+        </div>
+        <div class="plan-mini" onclick="selectPlan(this,'future')">
+          <div class="pm-top"><div class="pm-name">🌳 Green First</div><div class="pm-badge draft">Draft</div></div>
+          <div class="pm-desc">Prioritise nature and health. Slower growth but a healthier, cooler city.</div>
+        </div>
+        <div class="plan-mini" onclick="selectPlan(this,'future')">
+          <div class="pm-top"><div class="pm-name">💼 Jobs & Business First</div><div class="pm-badge draft">Draft</div></div>
+          <div class="pm-desc">Open more land for industry and commerce. More jobs, needs careful monitoring.</div>
+        </div>
+        <button class="new-plan-btn">✨ Create a new direction</button>
+      </div>
+      <div class="sb-section" style="padding-bottom:14px">
+        <div class="sb-title">📋 Before you decide</div>
+        <div class="alert-pill good"><div class="ap-icon">⚖️</div><div><div class="ap-title">All 3 plans are legally compliant</div><div class="ap-sub">Physical Planning Act 2019 verified</div></div></div>
+        <div class="alert-pill warn"><div class="ap-icon">🗣</div><div><div class="ap-title">Public participation required</div><div class="ap-sub">Kenya law requires community input</div></div></div>
+        <div class="alert-pill good"><div class="ap-icon">🤖</div><div><div class="ap-title">AI recommends: Green First</div><div class="ap-sub">Highest score — 81/100</div></div></div>
+      </div>
+    </div>
+
+    <div class="map-col">
+      <svg class="map-svg" viewBox="0 0 900 600" preserveAspectRatio="xMidYMid slice">
+        <!-- Future plan comparison map — shows 2035 projection -->
+        <rect width="900" height="600" fill="#D8EAC8"/>
+        <polygon points="100,70 800,50 860,180 840,530 560,560 220,550 90,400 70,200" fill="#C8DEB8" stroke="#88B860" stroke-width="2"/>
+        <!-- Scenario A zones -->
+        <polygon points="100,70 450,55 470,260 100,280" fill="#B4D498" stroke="#88B860" stroke-width="1" opacity="0.85"/>
+        <polygon points="450,55 800,70 820,270 470,260" fill="#E8D498" stroke="#C8A850" stroke-width="1" opacity="0.8"/>
+        <polygon points="90,280 470,260 450,520 110,510" fill="#A8C8E0" stroke="#70A8CC" stroke-width="1" opacity="0.8"/>
+        <polygon points="470,260 820,270 800,530 450,520" fill="#C8C0DC" stroke="#9888C0" stroke-width="1" opacity="0.7"/>
+        <!-- 2035 projected green expansion under Green First -->
+        <circle cx="180" cy="140" r="55" fill="#5A9040" opacity="0.3"/>
+        <circle cx="670" cy="430" r="65" fill="#5A9040" opacity="0.28"/>
+        <circle cx="460" cy="460" r="40" fill="#5A9040" opacity="0.22"/>
+        <!-- Proposed new developments -->
+        <circle cx="700" cy="120" r="16" fill="rgba(193,123,58,0.5)" stroke="#C17B3A" stroke-width="1.5"/>
+        <text x="700" y="126" font-family="Plus Jakarta Sans" font-size="11" text-anchor="middle">🏭</text>
+        <rect x="640" y="140" width="120" height="24" rx="6" fill="white" opacity="0.85"/>
+        <text x="700" y="156" font-family="Plus Jakarta Sans" font-size="9" font-weight="700" fill="#7A5800" text-anchor="middle">Ruiru Industrial Park 2027</text>
+        <!-- Proposed hospital -->
+        <circle cx="730" cy="420" r="14" fill="rgba(217,95,69,0.5)" stroke="#D95F45" stroke-width="1.5"/>
+        <text x="730" y="426" font-family="Plus Jakarta Sans" font-size="11" text-anchor="middle">🏥</text>
+        <rect x="668" y="440" width="124" height="22" rx="6" fill="white" opacity="0.85"/>
+        <text x="730" y="455" font-family="Plus Jakarta Sans" font-size="9" font-weight="700" fill="#C04030" text-anchor="middle">Utawala Hospital — proposed</text>
+        <!-- River restored -->
+        <path d="M 120 300 Q 260 318 380 290 Q 500 262 640 308 Q 760 348 840 318" fill="none" stroke="#2A8898" stroke-width="5" opacity="0.6"/>
+        <rect x="340" y="258" width="120" height="20" rx="6" fill="white" opacity="0.85"/>
+        <text x="400" y="272" font-family="Plus Jakarta Sans" font-size="9" font-weight="700" fill="#2A6888" text-anchor="middle">Nairobi River — restored 2028</text>
+        <!-- Roads -->
+        <line x1="100" y1="180" x2="830" y2="180" stroke="white" stroke-width="3" opacity="0.6"/>
+        <line x1="460" y1="55" x2="460" y2="555" stroke="white" stroke-width="3" opacity="0.6"/>
+        <!-- Score badges -->
+        <rect x="130" y="440" width="110" height="66" rx="10" fill="white" opacity="0.92"/>
+        <text x="185" y="462" font-family="Plus Jakarta Sans" font-size="9" font-weight="700" fill="#7A9B70" text-anchor="middle">🌿 BALANCED</text>
+        <text x="185" y="480" font-family="Fraunces, serif" font-size="22" font-weight="700" fill="#2D4A22" text-anchor="middle">72</text>
+        <text x="185" y="498" font-family="Plus Jakarta Sans" font-size="9" fill="#7A9B70" text-anchor="middle">out of 100</text>
+        <rect x="260" y="440" width="110" height="66" rx="10" fill="#EFF9EB" opacity="0.95" stroke="#7DBF5E" stroke-width="1.5"/>
+        <text x="315" y="462" font-family="Plus Jakarta Sans" font-size="9" font-weight="700" fill="#3D6B30" text-anchor="middle">🌳 GREEN FIRST</text>
+        <text x="315" y="480" font-family="Fraunces, serif" font-size="22" font-weight="700" fill="#2D4A22" text-anchor="middle">81</text>
+        <text x="315" y="498" font-family="Plus Jakarta Sans" font-size="9" fill="#5A8A42" text-anchor="middle">AI recommends ✅</text>
+        <rect x="390" y="440" width="110" height="66" rx="10" fill="white" opacity="0.92"/>
+        <text x="445" y="462" font-family="Plus Jakarta Sans" font-size="9" font-weight="700" fill="#B08040" text-anchor="middle">💼 JOBS FIRST</text>
+        <text x="445" y="480" font-family="Fraunces, serif" font-size="22" font-weight="700" fill="#C17B3A" text-anchor="middle">58</text>
+        <text x="445" y="498" font-family="Plus Jakarta Sans" font-size="9" fill="#B08040" text-anchor="middle">highest env. risk</text>
+      </svg>
+      <div class="map-alert-bar" style="background:#EFF9EB;border-color:var(--leaf);color:var(--earth)">🤖 <strong>AI recommendation:</strong> Green First scores 81/100 — best long-term outcome for Nairobi</div>
+      <div class="zone-card" style="top:28%;left:54%">
+        <div class="zc-icon">🤖</div>
+        <div class="zc-title">AI Verdict: Green First</div>
+        <div class="zc-sub">Based on 47 planning indicators</div>
+        <div class="zc-row"><span>Overall score</span><span style="color:var(--earth-light);font-weight:600">81 / 100</span></div>
+        <div class="zc-row"><span>Tree cover 2035</span><span style="color:var(--earth-light);font-weight:600">19%</span></div>
+        <div class="zc-row"><span>Flood risk 2030</span><span style="color:var(--earth-light);font-weight:600">Low</span></div>
+        <div class="zc-row"><span>Long-term saving</span><span style="color:var(--earth-light);font-weight:600">KSh 8.1B</span></div>
+        <button class="zc-btn" onclick="sendQuick2('future','Why does the AI recommend Green First?')">Why does AI recommend this? →</button>
+      </div>
+      <div class="zoom-wrap"><div class="zoom-btn">+</div><div class="zoom-btn">−</div></div>
+      <div class="map-key">
+        <div class="mk-title">2035 projection</div>
+        <div class="mk-item"><div class="mk-dot" style="background:#5A9040;opacity:0.5"></div>Proposed green expansion</div>
+        <div class="mk-item"><div style="font-size:12px">🏭</div>New industrial zones</div>
+        <div class="mk-item"><div style="font-size:12px">🏥</div>Proposed facilities</div>
+        <div class="mk-item"><div class="mk-dot" style="background:#2A8898;opacity:0.8"></div>Restored river</div>
+      </div>
+    </div>
+
+    <div class="advisor">
+      <div class="adv-head"><div class="adv-av">🤖</div><div><div class="adv-name">Mazingira Assistant</div><div class="adv-role">Future Plans briefing</div></div><div class="adv-live"><div class="adv-dot"></div>Live</div></div>
+      <div class="chat-msgs" id="chat-future">
+        <div class="bub ai"><div class="bub-from">Mazingira Assistant</div>
+          <div class="bub-txt"><span class="tag good">🌳 AI Recommendation</span><br>Your Excellency, after modelling 47 indicators, <strong>Green First</strong> gives Nairobi the best outcome by 2035.<br><br>It costs <strong>KSh 2.4B</strong> more upfront but saves <strong>KSh 8.1B</strong> long-term through fewer floods, better health, and lower cooling costs.<br><br>It also keeps Kenya on track with its climate commitments — important for international funding.</div></div>
+        <div class="bub ai"><div class="bub-from">Mazingira Assistant</div>
+          <div class="bub-txt"><span class="tag info">📋 What happens next</span><br>To adopt a plan, Kenya law requires:<br><br>1. <strong>Public participation</strong> in all wards<br>2. <strong>Environmental impact assessment</strong><br>3. <strong>County Assembly approval</strong><br><br>I can help you draft the public participation schedule if you're ready to begin.</div></div>
+      </div>
+      <div class="upload-panel" id="up-panel-future">
+        <div class="up-inner">
+          <div class="up-icon">📂</div>
+          <div class="up-title">Upload a planning document</div>
+          <div class="up-sub">IDPs, spatial plans, policy briefs — the AI will analyse and compare with your scenarios</div>
+          <div class="up-form">
+            <select class="up-select" id="up-dept-future"><option value="">Select department…</option><option>Planning</option><option>Governor's Office</option><option>Finance & Budget</option><option>Environment</option></select>
+            <select class="up-select" id="up-subj-future"><option value="">Select subject…</option><option>Integrated Development Plan</option><option>Spatial Plan</option><option>Climate Action Plan</option><option>Policy Brief</option><option>Vision Document</option></select>
+            <label class="up-file-btn">Choose file (PDF, Word, Excel)<input type="file" class="up-file-input" accept=".pdf,.docx,.xlsx,.csv" onchange="handleUploadFromPanel(this,'future')"></label>
+          </div>
+        </div>
+      </div>
+      <div id="docs-future"></div>
+      <div class="quick-qs">
+        <div class="qq-lbl">Quick questions</div>
+        <div class="qq" onclick="sendQuick(this,'future')">🌳 Why Green First scores highest?</div>
+        <div class="qq" onclick="sendQuick(this,'future')">📣 Draft participation schedule</div>
+        <div class="qq" onclick="sendQuick(this,'future')">💰 How do we fund this?</div>
+        <div class="qq" onclick="sendQuick(this,'future')">⚖️ What does county law require?</div>
+      </div>
+      <div class="chat-bar">
+        <button class="attach-btn" id="attach-future" onclick="toggleUpload('future')">📎</button>
+        <input class="chat-in" id="input-future" placeholder="Ask about future plans…" onkeydown="if(event.key==='Enter')sendMsg('future')">
+        <button class="send-btn" onclick="sendMsg('future')">↑</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- end app-body -->
+
+<!-- BOTTOMBAR -->
+<div class="bottombar">
+  <div class="bot-i"><div class="bot-dot"></div>Map data current</div>
+  <div class="bot-i"><div class="bot-dot"></div>AI assistant ready</div>
+  <div class="bot-i"><div class="bot-dot warn"></div>Satellite: 3 days old</div>
+  <div class="bot-r">Mazingira · Nairobi County · Governor's Platform · 2026</div>
+</div>
+
+<script>
+// Mobile menu toggle
+function toggleMobileMenu() {
+  const menu = document.getElementById('mobileMenu');
+  menu.classList.toggle('show');
+  // Prevent body scroll when menu is open
+  document.body.style.overflow = menu.classList.contains('show') ? 'hidden' : '';
+}
+
+// Close mobile menu when clicking outside
+document.addEventListener('click', function(e) {
+  const menu = document.getElementById('mobileMenu');
+  const menuBtn = e.target.closest('.mobile-menu-btn');
+  const menuContent = e.target.closest('.mobile-menu-content');
+  
+  if (menu.classList.contains('show') && !menuBtn && !menuContent) {
+    toggleMobileMenu();
+  }
+});
+
+// Touch gestures for mobile menu
+let touchStartX = 0;
+let touchEndX = 0;
+
+document.addEventListener('touchstart', function(e) {
+  touchStartX = e.changedTouches[0].screenX;
+});
+
+document.addEventListener('touchend', function(e) {
+  touchEndX = e.changedTouches[0].screenX;
+  handleSwipeGesture();
+});
+
+function handleSwipeGesture() {
+  const menu = document.getElementById('mobileMenu');
+  const swipeThreshold = 50;
+  const swipeDistance = touchEndX - touchStartX;
+  
+  // Swipe right to open menu (from left edge)
+  if (touchStartX < 20 && swipeDistance > swipeThreshold) {
+    if (!menu.classList.contains('show')) {
+      toggleMobileMenu();
+    }
+  }
+  
+  // Swipe left to close menu
+  if (menu.classList.contains('show') && swipeDistance < -swipeThreshold) {
+    toggleMobileMenu();
+  }
+}
+
+// Enhanced touch feedback for mobile
+document.addEventListener('DOMContentLoaded', function() {
+  // Add ripple effect to buttons on mobile
+  if ('ontouchstart' in window) {
+    const buttons = document.querySelectorAll('button, .tab, .snap, .alert-pill, .plan-mini, .qq, .zc-btn');
+    buttons.forEach(btn => {
+      btn.addEventListener('touchstart', function() {
+        this.style.transform = 'scale(0.95)';
+      });
+      btn.addEventListener('touchend', function() {
+        this.style.transform = 'scale(1)';
+      });
+    });
+  }
+  
+  // Make zone cards draggable on mobile
+  const zoneCards = document.querySelectorAll('.zone-card');
+  zoneCards.forEach(card => {
+    let isDragging = false;
+    let startX, startY, initialX, initialY;
+    
+    card.addEventListener('touchstart', function(e) {
+      isDragging = true;
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+      initialX = card.offsetLeft;
+      initialY = card.offsetTop;
+      card.style.transition = 'none';
+    });
+    
+    card.addEventListener('touchmove', function(e) {
+      if (!isDragging) return;
+      e.preventDefault();
+      const dx = e.touches[0].clientX - startX;
+      const dy = e.touches[0].clientY - startY;
+      card.style.left = (initialX + dx) + 'px';
+      card.style.top = (initialY + dy) + 'px';
+    });
+    
+    card.addEventListener('touchend', function() {
+      isDragging = false;
+      card.style.transition = '';
+    });
+  });
+});
+
+// ── Navigation ──
+function showPage(key) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  const map = {county:0,roads:1,nature:2,people:3,economy:4,future:5};
+  document.getElementById('page-' + key).classList.add('active');
+  document.querySelectorAll('.tab')[map[key]].classList.add('active');
+}
+
+// ── Plan selection ──
+function selectPlan(card, page) {
+  const sidebar = card.closest('.sidebar');
+  sidebar.querySelectorAll('.plan-mini').forEach(c => {
+    c.classList.remove('chosen');
+    c.querySelector('.pm-badge').textContent = 'Draft';
+    c.querySelector('.pm-badge').classList.remove('active');
+    c.querySelector('.pm-badge').classList.add('draft');
+  });
+  card.classList.add('chosen');
+  card.querySelector('.pm-badge').textContent = 'Active';
+  card.querySelector('.pm-badge').classList.add('active');
+  card.querySelector('.pm-badge').classList.remove('draft');
+}
+
+// ── Chat ──
+function sendMsg(page) {
+  const input = document.getElementById('input-' + page);
+  const val = input.value.trim();
+  if (!val) return;
+  addBubble(page, 'me', val);
+  input.value = '';
+  setTimeout(() => {
+    addBubble(page, 'ai', getAIReply(val, page));
+  }, 800);
+}
+
+function sendQuick(el, page) {
+  const text = el.textContent.trim();
+  addBubble(page, 'me', text);
+  setTimeout(() => addBubble(page, 'ai', getAIReply(text, page)), 800);
+}
+
+function sendQuick2(page, text) {
+  addBubble(page, 'me', text);
+  setTimeout(() => addBubble(page, 'ai', getAIReply(text, page)), 800);
+}
+
+function addBubble(page, who, text) {
+  const chat = document.getElementById('chat-' + page);
+  const div = document.createElement('div');
+  div.className = 'bub ' + who;
+  div.innerHTML = `<div class="bub-from">${who === 'ai' ? 'Mazingira Assistant' : 'You'}</div><div class="bub-txt">${text}</div>`;
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function getAIReply(msg, page) {
+  const m = msg.toLowerCase();
+  if (m.includes('tree') || m.includes('green')) return '<span class="tag good">🌳 Green analysis</span><br>To reach 20% tree cover, Nairobi needs to plant approximately <strong>1.8M more trees</strong> and protect 3,200 ha of existing green space. The Green First plan achieves this by 2032 — 3 years ahead of the Balanced Growth plan.';
+  if (m.includes('flood') || m.includes('mathare') || m.includes('rain')) return '<span class="tag risk">🌊 Flood risk</span><br>The Mathare drainage upgrade costs <strong>KSh 480M</strong> to complete. Without it, the 2026 rainy season could affect up to 42,000 residents. Last year\'s flood response cost <strong>KSh 1.8B</strong> — acting now is 3.75× cheaper.';
+  if (m.includes('cabinet') || m.includes('brief') || m.includes('report')) return '<span class="tag info">📋 Cabinet brief ready</span><br>I\'ve drafted a 2-page Cabinet briefing covering the three priority issues: Mathare drainage, tree cover decline, and the Ruiru Industrial Park opportunity. It\'s formatted for a 10-minute Cabinet review. Would you like me to also prepare talking points?';
+  if (m.includes('legal') || m.includes('law') || m.includes('nema') || m.includes('comply')) return '<span class="tag good">⚖️ Legal check</span><br>Nairobi is currently <strong>below NEMA\'s 20% green cover requirement</strong> and partially behind on the Water Act 2016 obligations. The Green First plan would bring the county into full compliance by 2030. I can generate a detailed compliance report for the County Assembly.';
+  if (m.includes('hospital') || m.includes('health')) return '<span class="tag risk">🏥 Health gap</span><br>Building a Level 4 hospital in Utawala would serve <strong>180,000 residents</strong> currently without nearby care. Estimated cost: <strong>KSh 1.2B</strong> over 3 years. There is a matching grant available from the National Government health devolution fund — I can help you apply.';
+  if (m.includes('job') || m.includes('ruiru') || m.includes('employ') || m.includes('business')) return '<span class="tag good">💼 Economic opportunity</span><br>Approving the Ruiru Industrial Park today and initiating the investor roadshow within 30 days could result in ground-breaking by Q3 2026, with first <strong>2,000 jobs by end of 2027</strong>. I can draft the approval memo for your signature.';
+  if (m.includes('water')) return '<span class="tag warn">🚰 Water analysis</span><br>Water access has dropped from 76% to 74% this year — primarily in Athi River and Embakasi corridors where population grew fastest. The Kibera pipeline project (currently 22% complete) will add <strong>80,000 people</strong> to the network when done. Accelerating funding would have the biggest near-term impact.';
+  if (m.includes('why green') || m.includes('recommend')) return '<span class="tag good">🌳 Why Green First wins</span><br>Green First scores 81/100 because it:<br><br>✅ Brings tree cover to 19% (near the 20% legal target)<br>✅ Reduces flood risk by 60%<br>✅ Saves KSh 8.1B in long-term avoided costs<br>✅ Keeps Kenya compliant with Paris Agreement commitments<br>✅ Improves public health outcomes (cooler city, cleaner water)<br><br>The main trade-off is 1,200 families needing relocation — which the plan budgets for.';
+  if (m.includes('fund') || m.includes('afford') || m.includes('budget') || m.includes('cost')) return '<span class="tag info">💰 Funding options</span><br>For the Green First plan\'s KSh 2.4B additional cost, three funding routes are available:<br><br>1. <strong>Green Climate Fund</strong> — Kenya is eligible for up to $30M for urban forestry<br>2. <strong>World Bank KUSP</strong> — Kenya Urban Support Programme covers drainage<br>3. <strong>County Development Fund</strong> — 15% reallocation from current budget<br><br>I can help prepare the GCF application.';
+  if (m.includes('particip') || m.includes('community') || m.includes('public')) return '<span class="tag info">🗣 Participation plan</span><br>Kenya\'s Physical Planning Act requires at least <strong>21 days of public participation</strong> across all 17 wards before adopting a county spatial plan. I\'ve drafted a 6-week schedule with ward barazas, online submissions, and an accessible summary in Kiswahili. Ready to share with your team?';
+  return '<span class="tag info">🤖 Governor\'s briefing</span><br>Thank you, Your Excellency. Based on current county data, the most impactful action this week is to approve the <strong>Mathare drainage fast-track</strong> (protecting 42,000 people) and initiate the <strong>Ruiru Industrial Park investor roadshow</strong> (8,000 jobs). I can prepare briefing notes for both.';
+}
+
+// ── Upload toggle ──
+function toggleUpload(page) {
+  const panel = document.getElementById('up-panel-' + page);
+  const btn = document.getElementById('attach-' + page);
+  const isShowing = panel.classList.contains('show');
+  panel.classList.toggle('show', !isShowing);
+  btn.classList.toggle('active', !isShowing);
+}
+
+// ── Handle file upload from panel ──
+function handleUploadFromPanel(input, page) {
+  const file = input.files[0];
+  if (!file) return;
+  const dept = document.getElementById('up-dept-' + page).value || 'Department';
+  const subj = document.getElementById('up-subj-' + page).value || 'Report';
+  showUploadedDoc(file, dept, subj, page);
+  toggleUpload(page);
+}
+
+// ── Handle file from topnav ──
+function triggerUpload(e) {
+  // Let natural label behaviour proceed — file input opens
+}
+
+function handleFileUpload(input) {
+  const file = input.files[0];
+  if (!file) return;
+  // Find active page
+  const activePage = document.querySelector('.page.active');
+  const pageId = activePage.id.replace('page-', '');
+  showUploadedDoc(file, 'General', 'Uploaded report', pageId);
+  addBubble(pageId, 'ai', `<span class="tag info">📂 Document received</span><br>I've received <strong>${file.name}</strong>. I'm reading through it now and will give you a plain-English briefing shortly. Which aspect would you like me to focus on — risks, budgets, or recommendations?`);
+}
+
+function showUploadedDoc(file, dept, subj, page) {
+  const container = document.getElementById('docs-' + page);
+  if (!container) return;
+  const ext = file.name.split('.').pop().toUpperCase();
+  const icons = {PDF:'📄',DOCX:'📝',XLSX:'📊',CSV:'📊'};
+  const icon = icons[ext] || '📎';
+  const div = document.createElement('div');
+  div.className = 'uploaded-doc';
+  div.innerHTML = `
+    <div class="ud-icon">${icon}</div>
+    <div style="flex:1">
+      <div class="ud-title">${file.name}</div>
+      <div class="ud-meta">${dept} · ${subj}</div>
+    </div>
+    <div class="ud-remove" onclick="this.parentElement.remove()">✕</div>
+  `;
+  container.appendChild(div);
+  container.scrollIntoView({behavior:'smooth', block:'nearest'});
+
+  // Add AI analysis bubble
+  setTimeout(() => {
+    addBubble(page, 'ai', `<span class="tag good">📂 Document analysed</span><br>I've read through <strong>${file.name}</strong> from the <strong>${dept}</strong> department.<br><br>Key findings:<br>✅ 3 priority actions identified<br>⚠️ 2 budget items exceed county limits<br>📋 2 NEMA compliance actions required<br><br>Would you like the full briefing or just the urgent decisions?`);
+  }, 1500);
+}
+</script>
+
+</body>
+</html>
