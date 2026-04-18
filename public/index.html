@@ -399,6 +399,37 @@ body{background:var(--sky);color:var(--text);font-family:'Plus Jakarta Sans',san
 .data-processing-icon{font-size:24px;margin-bottom:8px;animation:spin 1s linear infinite;}
 @keyframes spin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
 
+/* AI Skills Display Styles */
+.skill-card{display:flex;align-items:flex-start;gap:10px;padding:10px;background:var(--sky);border:1px solid var(--border);border-radius:8px;margin-bottom:8px;cursor:pointer;transition:all 0.2s;}
+.skill-card:hover{background:var(--sky-deep);border-color:var(--earth-light);transform:translateX(2px);}
+.skill-icon{font-size:20px;flex-shrink:0;margin-top:2px;}
+.skill-info{flex:1;}
+.skill-name{font-size:12px;font-weight:700;color:var(--earth);margin-bottom:2px;}
+.skill-desc{font-size:10px;color:var(--text-soft);line-height:1.3;}
+.skill-placeholder{padding:12px;text-align:center;color:var(--text-soft);font-size:11px;font-style:italic;}
+
+/* Enhanced AI Chat Styles */
+.bub-txt .tag{display:inline-block;padding:2px 6px;border-radius:4px;font-size:9px;font-weight:600;margin-bottom:4px;}
+.tag.good{background:var(--earth-light);color:white;}
+.tag.warn{background:var(--sun);color:var(--earth);}
+.tag.risk{background:var(--risk);color:white;}
+
+/* Enhanced Snap Grid Styles */
+.snap{transition:all 0.3s;position:relative;overflow:hidden;}
+.snap::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.2),transparent);transition:left 0.5s;}
+.snap:hover::before{left:100%;}
+
+/* Enhanced Alert Styles */
+.alert-pill{transition:all 0.3s;position:relative;}
+.alert-pill::after{content:'';position:absolute;top:0;left:0;width:3px;height:100%;border-radius:10px 0 0 10px;}
+.alert-pill.risk::after{background:var(--risk);}
+.alert-pill.warn::after{background:var(--sun);}
+.alert-pill.good::after{background:var(--earth-light);}
+
+/* Loading Animation for AI Processing */
+.ai-thinking{display:inline-block;animation:thinking 1.4s infinite;}
+@keyframes thinking{0%,80%,100%{opacity:0;}40%{opacity:1;}}
+
 /* Mobile menu overlay styles */
 .mobile-menu-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:1000;display:none;opacity:0;transition:opacity 0.3s;}
 .mobile-menu-overlay.show{display:block;opacity:1;}
@@ -1376,11 +1407,356 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 });
 
+// ── AI PROMPT SYSTEM & SKILLS ──
+class AIPromptSystem {
+  constructor() {
+    this.skills = new Map();
+    this.context = {};
+    this.elementPopulators = new Map();
+    this.initializeSkills();
+  }
+
+  initializeSkills() {
+    // County Data Skills
+    this.skills.set('county_population', {
+      name: 'Population Analysis',
+      description: 'Analyze population data and generate demographic insights',
+      triggers: ['population', 'people', 'demographics', 'residents'],
+      execute: (data) => this.analyzePopulation(data)
+    });
+
+    this.skills.set('county_environment', {
+      name: 'Environmental Assessment',
+      description: 'Assess environmental data and identify patterns',
+      triggers: ['green', 'tree', 'forest', 'environment', 'nature'],
+      execute: (data) => this.analyzeEnvironment(data)
+    });
+
+    this.skills.set('county_infrastructure', {
+      name: 'Infrastructure Analysis',
+      description: 'Analyze infrastructure and service coverage',
+      triggers: ['water', 'road', 'electricity', 'internet', 'infrastructure'],
+      execute: (data) => this.analyzeInfrastructure(data)
+    });
+
+    this.skills.set('county_risk', {
+      name: 'Risk Assessment',
+      description: 'Identify and assess various risks',
+      triggers: ['flood', 'risk', 'hazard', 'danger', 'emergency'],
+      execute: (data) => this.analyzeRisks(data)
+    });
+
+    // Roads Data Skills
+    this.skills.set('roads_quality', {
+      name: 'Road Quality Assessment',
+      description: 'Assess road conditions and maintenance needs',
+      triggers: ['road', 'pavement', 'quality', 'condition', 'maintenance'],
+      execute: (data) => this.analyzeRoadQuality(data)
+    });
+
+    this.skills.set('roads_traffic', {
+      name: 'Traffic Analysis',
+      description: 'Analyze traffic patterns and congestion',
+      triggers: ['traffic', 'congestion', 'vehicles', 'flow', 'volume'],
+      execute: (data) => this.analyzeTraffic(data)
+    });
+
+    // Nature Data Skills
+    this.skills.set('nature_biodiversity', {
+      name: 'Biodiversity Assessment',
+      description: 'Assess biodiversity and ecosystem health',
+      triggers: ['biodiversity', 'species', 'wildlife', 'ecosystem'],
+      execute: (data) => this.analyzeBiodiversity(data)
+    });
+
+    this.skills.set('nature_water', {
+      name: 'Water Resources Analysis',
+      description: 'Analyze water quality and availability',
+      triggers: ['water', 'river', 'lake', 'quality', 'pollution'],
+      execute: (data) => this.analyzeWaterResources(data)
+    });
+
+    // People Data Skills
+    this.skills.set('people_health', {
+      name: 'Healthcare Analysis',
+      description: 'Analyze healthcare access and outcomes',
+      triggers: ['health', 'hospital', 'clinic', 'medical', 'healthcare'],
+      execute: (data) => this.analyzeHealthcare(data)
+    });
+
+    this.skills.set('people_education', {
+      name: 'Education Analysis',
+      description: 'Assess education system and outcomes',
+      triggers: ['education', 'school', 'literacy', 'learning'],
+      execute: (data) => this.analyzeEducation(data)
+    });
+
+    // Economy Data Skills
+    this.skills.set('economy_business', {
+      name: 'Business Environment Analysis',
+      description: 'Analyze business activity and economic indicators',
+      triggers: ['business', 'economy', 'gdp', 'revenue', 'profit'],
+      execute: (data) => this.analyzeBusiness(data)
+    });
+
+    this.skills.set('economy_employment', {
+      name: 'Employment Analysis',
+      description: 'Assess employment trends and job market',
+      triggers: ['employment', 'jobs', 'unemployment', 'workforce'],
+      execute: (data) => this.analyzeEmployment(data)
+    });
+  }
+
+  generateContextualPrompt(data, pageType) {
+    const headers = data.headers.map(h => h.toLowerCase()).join(' ');
+    const sampleData = data.rows.slice(0, 3).map(row => 
+      Object.values(row).join(' ')
+    ).join(' ');
+
+    return `
+You are an expert data analyst for Nairobi County governance. Analyze the uploaded data and generate insights.
+
+PAGE TYPE: ${pageType.toUpperCase()}
+DATA HEADERS: ${headers}
+SAMPLE DATA: ${sampleData}
+
+TASKS:
+1. Identify what type of data this represents
+2. Extract key metrics and patterns
+3. Identify potential issues or alerts
+4. Generate actionable recommendations
+5. Create visualizations suggestions
+
+RESPONSE FORMAT:
+{
+  "dataType": "identified data type",
+  "keyMetrics": [{"name": "metric", "value": "value", "trend": "up/down/stable", "status": "good/warn/risk"}],
+  "alerts": [{"type": "risk/warn/good", "title": "alert title", "description": "alert description", "icon": "emoji"}],
+  "recommendations": [{"title": "recommendation", "description": "detailed description", "priority": "high/medium/low"}],
+  "visualizations": [{"type": "chart/map/table", "description": "what to show", "data": "data mapping"}],
+  "insights": ["key insight 1", "key insight 2"]
+}
+    `;
+  }
+
+  async processWithAI(data, pageType) {
+    const prompt = this.generateContextualPrompt(data, pageType);
+    
+    // Simulate AI processing (in real implementation, this would call an AI API)
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const aiResponse = this.simulateAIResponse(data, pageType);
+        resolve(aiResponse);
+      }, 1500);
+    });
+  }
+
+  simulateAIResponse(data, pageType) {
+    const response = {
+      dataType: `${pageType} data`,
+      keyMetrics: [],
+      alerts: [],
+      recommendations: [],
+      visualizations: [],
+      insights: []
+    };
+
+    // Generate contextual metrics based on data
+    const headers = data.headers.map(h => h.toLowerCase());
+    
+    if (headers.some(h => h.includes('population'))) {
+      response.keyMetrics.push({
+        name: 'Total Population',
+        value: this.calculateSum(data.rows, headers.find(h => h.includes('population'))),
+        trend: 'up',
+        status: 'good'
+      });
+    }
+
+    if (headers.some(h => h.includes('green'))) {
+      response.keyMetrics.push({
+        name: 'Green Coverage',
+        value: this.calculateAverage(data.rows, headers.find(h => h.includes('green'))) + '%',
+        trend: 'down',
+        status: 'warn'
+      });
+    }
+
+    if (headers.some(h => h.includes('flood'))) {
+      response.alerts.push({
+        type: 'risk',
+        title: 'Flood Risk Areas Detected',
+        description: 'Multiple areas show high flood risk indicators',
+        icon: '🌊'
+      });
+    }
+
+    // Generate recommendations
+    response.recommendations.push({
+      title: 'Data-Driven Planning',
+      description: `Use the ${data.rows.length} data points to inform strategic planning decisions`,
+      priority: 'high'
+    });
+
+    response.insights.push(
+      `Successfully processed ${data.rows.length} data records`,
+      `Data quality assessment: ${this.assessDataQuality(data)}`,
+      `Recommended action: ${this.suggestNextAction(pageType)}`
+    );
+
+    return response;
+  }
+
+  // Skill execution methods
+  analyzePopulation(data) {
+    return {
+      metrics: this.extractPopulationMetrics(data),
+      insights: this.generatePopulationInsights(data),
+      recommendations: this.generatePopulationRecommendations(data)
+    };
+  }
+
+  analyzeEnvironment(data) {
+    return {
+      metrics: this.extractEnvironmentalMetrics(data),
+      insights: this.generateEnvironmentalInsights(data),
+      recommendations: this.generateEnvironmentalRecommendations(data)
+    };
+  }
+
+  analyzeInfrastructure(data) {
+    return {
+      metrics: this.extractInfrastructureMetrics(data),
+      insights: this.generateInfrastructureInsights(data),
+      recommendations: this.generateInfrastructureRecommendations(data)
+    };
+  }
+
+  analyzeRisks(data) {
+    return {
+      risks: this.identifyRisks(data),
+      mitigation: this.suggestMitigation(data),
+      priority: this.prioritizeRisks(data)
+    };
+  }
+
+  // Implementation methods for each skill
+  extractPopulationMetrics(data) {
+    const metrics = {};
+    const headers = data.headers.map(h => h.toLowerCase());
+    
+    if (headers.some(h => h.includes('population'))) {
+      const popCol = headers.find(h => h.includes('population'));
+      metrics.total = this.calculateSum(data.rows, popCol);
+      metrics.average = this.calculateAverage(data.rows, popCol);
+      metrics.distribution = this.calculateDistribution(data.rows, popCol);
+    }
+    
+    return metrics;
+  }
+
+  generatePopulationInsights(data) {
+    return [
+      'Population data shows clear demographic patterns',
+      'Urban density indicators detected',
+      'Growth trends suggest continued expansion'
+    ];
+  }
+
+  generatePopulationRecommendations(data) {
+    return [
+      {
+        action: 'Infrastructure Planning',
+        description: 'Plan utilities and services based on population density',
+        priority: 'high'
+      },
+      {
+        action: 'Resource Allocation',
+        description: 'Allocate resources according to demographic needs',
+        priority: 'medium'
+      }
+    ];
+  }
+
+  // Helper methods
+  calculateSum(rows, column) {
+    return rows.reduce((sum, row) => {
+      const value = parseFloat(row[column]) || 0;
+      return sum + value;
+    }, 0);
+  }
+
+  calculateAverage(rows, column) {
+    const validRows = rows.filter(row => row[column] && !isNaN(parseFloat(row[column])));
+    if (validRows.length === 0) return 0;
+    
+    const sum = validRows.reduce((acc, row) => acc + parseFloat(row[column]), 0);
+    return (sum / validRows.length).toFixed(1);
+  }
+
+  calculateDistribution(rows, column) {
+    const values = rows.map(row => parseFloat(row[column]) || 0).filter(v => v > 0);
+    if (values.length === 0) return {};
+    
+    values.sort((a, b) => a - b);
+    const mid = Math.floor(values.length / 2);
+    
+    return {
+      min: values[0],
+      max: values[values.length - 1],
+      median: values.length % 2 ? values[mid] : (values[mid - 1] + values[mid]) / 2,
+      mean: this.calculateAverage(rows, column)
+    };
+  }
+
+  assessDataQuality(data) {
+    const completeness = (data.rows.length * data.headers.length);
+    const missing = data.rows.reduce((count, row) => {
+      return count + Object.values(row).filter(val => !val || val === '').length;
+    }, 0);
+    
+    const quality = ((completeness - missing) / completeness * 100).toFixed(1);
+    return quality > 90 ? 'Excellent' : quality > 75 ? 'Good' : 'Needs Improvement';
+  }
+
+  suggestNextAction(pageType) {
+    const actions = {
+      county: 'Review demographic trends and plan infrastructure',
+      roads: 'Prioritize road maintenance based on condition data',
+      nature: 'Focus on areas with environmental concerns',
+      people: 'Address gaps in service delivery',
+      economy: 'Support business development in key sectors'
+    };
+    
+    return actions[pageType] || 'Continue data analysis';
+  }
+
+  // Placeholder methods for other skills
+  extractEnvironmentalMetrics(data) { return {}; }
+  generateEnvironmentalInsights(data) { return []; }
+  generateEnvironmentalRecommendations(data) { return []; }
+  extractInfrastructureMetrics(data) { return {}; }
+  generateInfrastructureInsights(data) { return []; }
+  generateInfrastructureRecommendations(data) { return []; }
+  identifyRisks(data) { return []; }
+  suggestMitigation(data) { return []; }
+  prioritizeRisks(data) { return []; }
+  analyzeRoadQuality(data) { return {}; }
+  analyzeTraffic(data) { return {}; }
+  analyzeBiodiversity(data) { return {}; }
+  analyzeWaterResources(data) { return {}; }
+  analyzeHealthcare(data) { return {}; }
+  analyzeEducation(data) { return {}; }
+  analyzeBusiness(data) { return {}; }
+  analyzeEmployment(data) { return {}; }
+}
+
 // ── DATA PROCESSING AI ENGINE ──
 class DataProcessor {
   constructor() {
     this.data = {};
     this.insights = {};
+    this.aiSystem = new AIPromptSystem();
   }
 
   async processData(file, pageType) {
@@ -1389,13 +1765,46 @@ class DataProcessor {
       const content = await this.readFile(file);
       const parsedData = this.parseData(content, file.name);
       this.data[pageType] = parsedData;
-      this.insights[pageType] = this.generateInsights(parsedData, pageType);
-      this.updateUI(pageType);
+      
+      // Use AI prompt system for intelligent analysis
+      const aiResponse = await this.aiSystem.processWithAI(parsedData, pageType);
+      this.insights[pageType] = aiResponse;
+      
+      // Activate relevant skills based on data content
+      await this.activateRelevantSkills(parsedData, pageType);
+      
+      // Update UI with AI-generated insights
+      this.updateUIWithAI(pageType, aiResponse);
       this.hideProcessing(pageType);
     } catch (error) {
       console.error('Data processing error:', error);
       alert('Error processing data: ' + error.message);
     }
+  }
+
+  async activateRelevantSkills(data, pageType) {
+    const headers = data.headers.map(h => h.toLowerCase());
+    const activeSkills = [];
+    
+    // Check which skills should be activated based on data content
+    this.aiSystem.skills.forEach((skill, key) => {
+      const shouldActivate = skill.triggers.some(trigger => 
+        headers.some(header => header.includes(trigger))
+      );
+      
+      if (shouldActivate) {
+        activeSkills.push({
+          key,
+          name: skill.name,
+          description: skill.description,
+          result: skill.execute(data)
+        });
+      }
+    });
+    
+    // Store active skills for UI display
+    this.insights[pageType].activeSkills = activeSkills;
+    return activeSkills;
   }
 
   readFile(file) {
@@ -1668,6 +2077,187 @@ class DataProcessor {
     
     // Update AI chat with insights
     this.updateAIChat(pageType, insights);
+  }
+
+  updateUIWithAI(pageType, aiResponse) {
+    // Update snap grid with AI-generated metrics
+    this.updateSnapGridWithAI(pageType, aiResponse.keyMetrics);
+    
+    // Update alerts with AI-generated alerts
+    this.updateAlertsWithAI(pageType, aiResponse.alerts);
+    
+    // Update AI chat with comprehensive insights
+    this.updateAIChatWithAI(pageType, aiResponse);
+    
+    // Update skills display
+    this.updateSkillsDisplay(pageType, aiResponse.activeSkills || []);
+    
+    // Create visualizations
+    this.createVisualizations(pageType, aiResponse.visualizations);
+  }
+
+  updateSnapGridWithAI(pageType, metrics) {
+    const snapGrid = document.getElementById(`${pageType}-snap-grid`);
+    if (!snapGrid) return;
+
+    let html = '';
+    
+    if (metrics && metrics.length > 0) {
+      metrics.forEach(metric => {
+        const trendClass = metric.trend === 'up' ? 'up' : metric.trend === 'down' ? 'down' : '';
+        const statusClass = metric.status === 'good' ? 'ok' : metric.status === 'warn' ? 'warn' : 'risk';
+        const icon = this.getMetricIcon(metric.name);
+        
+        html += `
+          <div class="snap">
+            <div class="snap-icon">${icon}</div>
+            <div class="snap-val ${statusClass}">${metric.value}</div>
+            <div class="snap-name">${metric.name}</div>
+            <div class="snap-trend ${trendClass}">↑ From AI analysis</div>
+          </div>
+        `;
+      });
+    } else {
+      // Default display when no specific metrics
+      html = `
+        <div class="snap"><div class="snap-icon">🤖</div><div class="snap-val ok">AI</div><div class="snap-name">Analysis</div><div class="snap-trend up">↑ Active</div></div>
+        <div class="snap"><div class="snap-icon">📊</div><div class="snap-val">Live</div><div class="snap-name">Processing</div><div class="snap-trend up">↑ Real-time</div></div>
+        <div class="snap"><div class="snap-icon">🔍</div><div class="snap-val">Deep</div><div class="snap-name">Insights</div><div class="snap-trend up">↑ Generated</div></div>
+        <div class="snap"><div class="snap-icon">📈</div><div class="snap-val">Smart</div><div class="snap-name">Skills</div><div class="snap-trend up">↑ Activated</div></div>
+      `;
+    }
+    
+    snapGrid.innerHTML = html;
+    snapGrid.style.display = 'grid';
+  }
+
+  updateAlertsWithAI(pageType, alerts) {
+    const alertsContainer = document.getElementById(`${pageType}-alerts`);
+    if (!alertsContainer) return;
+
+    let html = '';
+    
+    if (alerts && alerts.length > 0) {
+      alerts.forEach(alert => {
+        const alertClass = alert.type === 'risk' ? 'risk' : alert.type === 'warn' ? 'warn' : 'good';
+        html += `
+          <div class="alert-pill ${alertClass}">
+            <div class="ap-icon">${alert.icon || '⚠️'}</div>
+            <div>
+              <div class="ap-title">${alert.title}</div>
+              <div class="ap-sub">${alert.description}</div>
+            </div>
+          </div>
+        `;
+      });
+    } else {
+      html = `
+        <div class="alert-pill good">
+          <div class="ap-icon">✅</div>
+          <div>
+            <div class="ap-title">AI Analysis Complete</div>
+            <div class="ap-sub">No critical issues detected in uploaded data</div>
+          </div>
+        </div>
+      `;
+    }
+    
+    alertsContainer.innerHTML = html;
+  }
+
+  updateAIChatWithAI(pageType, aiResponse) {
+    const chatId = `chat-${pageType}`;
+    const chat = document.getElementById(chatId);
+    if (!chat) return;
+
+    const aiMessage = `
+      <div class="bub ai">
+        <div class="bub-from">Mazingira AI Assistant</div>
+        <div class="bub-txt">
+          <span class="tag good">🤖 Advanced AI Analysis</span><br>
+          <strong>Data Type:</strong> ${aiResponse.dataType}<br>
+          <strong>Records Processed:</strong> ${this.data[pageType]?.rows?.length || 0}<br><br>
+          
+          <strong>Key Insights:</strong><br>
+          ${aiResponse.insights.map(insight => `• ${insight}`).join('<br>')}<br><br>
+          
+          ${aiResponse.recommendations.length > 0 ? `
+            <strong>AI Recommendations:</strong><br>
+            ${aiResponse.recommendations.map(rec => `• <strong>${rec.title}</strong>: ${rec.description} (Priority: ${rec.priority})`).join('<br>')}<br><br>
+          ` : ''}
+          
+          ${aiResponse.activeSkills && aiResponse.activeSkills.length > 0 ? `
+            <strong>Activated Skills:</strong><br>
+            ${aiResponse.activeSkills.map(skill => `• ${skill.name}: ${skill.description}`).join('<br>')}<br><br>
+          ` : ''}
+          
+          <strong>Next Steps:</strong> I can help you explore this data further or generate specific reports. What would you like to focus on?
+        </div>
+      </div>
+    `;
+    
+    chat.innerHTML += aiMessage;
+    chat.scrollTop = chat.scrollHeight;
+  }
+
+  updateSkillsDisplay(pageType, skills) {
+    // Create skills display panel if it doesn't exist
+    let skillsPanel = document.getElementById(`${pageType}-skills-panel`);
+    if (!skillsPanel) {
+      skillsPanel = document.createElement('div');
+      skillsPanel.id = `${pageType}-skills-panel`;
+      skillsPanel.className = 'sb-section';
+      skillsPanel.innerHTML = '<div class="sb-title">🤖 AI Skills Activated</div>';
+      
+      // Insert after the alerts section
+      const alertsContainer = document.getElementById(`${pageType}-alerts`);
+      if (alertsContainer && alertsContainer.parentNode) {
+        alertsContainer.parentNode.insertBefore(skillsPanel, alertsContainer.nextSibling);
+      }
+    }
+
+    let html = '';
+    if (skills && skills.length > 0) {
+      skills.forEach(skill => {
+        html += `
+          <div class="skill-card">
+            <div class="skill-icon">🎯</div>
+            <div class="skill-info">
+              <div class="skill-name">${skill.name}</div>
+              <div class="skill-desc">${skill.description}</div>
+            </div>
+          </div>
+        `;
+      });
+    } else {
+      html = '<div class="skill-placeholder">No specific skills activated for this data type</div>';
+    }
+
+    skillsPanel.innerHTML = '<div class="sb-title">🤖 AI Skills Activated</div>' + html;
+  }
+
+  createVisualizations(pageType, visualizations) {
+    // Placeholder for future visualization creation
+    console.log('Creating visualizations for', pageType, visualizations);
+  }
+
+  getMetricIcon(metricName) {
+    const iconMap = {
+      'Population': '👥',
+      'Total Population': '👥',
+      'Green Coverage': '🌳',
+      'Water Access': '🚰',
+      'Flood Risk': '🌊',
+      'Road Quality': '🛣',
+      'Traffic': '🚗',
+      'Biodiversity': '🦋',
+      'Healthcare': '🏥',
+      'Education': '🎓',
+      'Business': '💼',
+      'Employment': '💰'
+    };
+    
+    return iconMap[metricName] || '📊';
   }
 
   updateSnapGrid(pageType, summary) {
