@@ -591,26 +591,54 @@ body{background:var(--sky);color:var(--text);font-family:'Plus Jakarta Sans',san
 <div class="llm-config-panel" id="llmConfigPanel" style="display:none;">
   <div class="llm-config-content">
     <div class="llm-config-header">
-      <div class="llm-config-title">🤖 AI Configuration</div>
-      <button class="llm-config-close" onclick="toggleLLMConfig()">×</button>
+      <div class="llm-config-title">⚙️ Platform Configuration</div>
+      <div class="llm-config-close" onclick="toggleLLMConfig()">✕</div>
     </div>
     <div class="llm-config-body">
+      <!-- LLM Configuration -->
       <div class="config-section">
-        <label class="config-label">LLM Provider:</label>
-        <select id="llmProvider" class="config-select" onchange="updateLLMProvider()">
-          <option value="simulation">Simulation (Default)</option>
+        <div class="config-label">🤖 LLM Provider</div>
+        <select id="llmProvider" onchange="updateLLMProvider()">
+          <option value="simulation">Simulation Mode</option>
           <option value="deepseek">DeepSeek</option>
           <option value="openai">OpenAI</option>
-          <option value="anthropic">Anthropic Claude</option>
+          <option value="anthropic">Anthropic</option>
         </select>
       </div>
       <div class="config-section">
-        <label class="config-label">API Key:</label>
-        <input type="password" id="llmApiKey" class="config-input" placeholder="Enter your API key">
-        <button class="config-save" onclick="saveLLMConfig()">Save Configuration</button>
+        <div class="config-label">API Key</div>
+        <input type="password" id="llmApiKey" placeholder="Enter your API key...">
       </div>
-      <div class="config-status" id="llmStatus">
-        <div class="status-indicator simulation">🤖 Using Simulation Mode</div>
+      <div class="config-section">
+        <div class="config-label">Model</div>
+        <select id="llmModel">
+          <option value="gpt-4">GPT-4</option>
+          <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+          <option value="claude-3-opus">Claude 3 Opus</option>
+          <option value="claude-3-sonnet">Claude 3 Sonnet</option>
+          <option value="deepseek-chat">DeepSeek Chat</option>
+        </select>
+      </div>
+      
+      <hr style="margin: 20px 0; border: none; border-top: 1px solid var(--border);">
+      
+      <!-- OpenStreetMap Configuration -->
+      <div class="config-section">
+        <div class="config-label">🗺️ OpenStreetMap Integration</div>
+        <div id="osmStatus" style="margin-bottom: 10px;">
+          <span class="status-indicator simulation">🔴 Not Connected</span>
+        </div>
+        <input type="text" id="osmClientId" placeholder="OSM Client ID...">
+        <input type="password" id="osmClientSecret" placeholder="OSM Client Secret..." style="margin-top: 8px;">
+      </div>
+      <div class="config-section">
+        <button class="empty-action-btn" onclick="authenticateOSM()">Connect to OpenStreetMap</button>
+      </div>
+      
+      <hr style="margin: 20px 0; border: none; border-top: 1px solid var(--border);">
+      
+      <div class="config-section">
+        <button class="empty-action-btn" onclick="saveLLMConfig()">Save Configuration</button>
       </div>
     </div>
   </div>
@@ -1769,6 +1797,187 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 });
 
+// ── OPENSTREETMAP INTEGRATION ──
+class OpenStreetMapClient {
+  constructor() {
+    this.clientId = null;
+    this.clientSecret = null;
+    this.accessToken = null;
+    this.isAuthenticated = false;
+    this.apiBaseUrl = 'https://api.openstreetmap.org/api/0.6';
+    this.oauthUrl = 'https://www.openstreetmap.org/oauth2/authorize';
+  }
+
+  initialize(clientId, clientSecret) {
+    this.clientId = clientId;
+    this.clientSecret = clientSecret;
+    this.checkStoredAuth();
+  }
+
+  checkStoredAuth() {
+    const authData = localStorage.getItem('osm_auth_data');
+    if (authData) {
+      try {
+        const parsed = JSON.parse(authData);
+        if (parsed.expires_at > Date.now()) {
+          this.accessToken = parsed.access_token;
+          this.isAuthenticated = true;
+          console.log('OSM authentication restored from storage');
+        } else {
+          localStorage.removeItem('osm_auth_data');
+        }
+      } catch (error) {
+        console.error('Error parsing stored auth data:', error);
+        localStorage.removeItem('osm_auth_data');
+      }
+    }
+  }
+
+  authenticate() {
+    const authUrl = `${this.oauthUrl}?client_id=${this.clientId}&response_type=token&redirect_uri=${encodeURIComponent('https://mazingira-expert.vercel.app/callback.html')}&scope=read_prefs write_prefs`;
+    
+    // Open OAuth popup
+    const popup = window.open(
+      authUrl,
+      'osm_auth',
+      'width=500,height=600,scrollbars=yes,resizable=yes'
+    );
+    
+    // Listen for auth callback
+    return new Promise((resolve, reject) => {
+      const messageHandler = (event) => {
+        if (event.data.type === 'osm_auth_success') {
+          this.accessToken = event.data.authData.access_token;
+          this.isAuthenticated = true;
+          window.removeEventListener('message', messageHandler);
+          popup.close();
+          resolve(event.data.authData);
+        } else if (event.data.type === 'osm_auth_error') {
+          window.removeEventListener('message', messageHandler);
+          popup.close();
+          reject(new Error(event.data.error));
+        }
+      };
+      
+      window.addEventListener('message', messageHandler);
+      
+      // Timeout after 5 minutes
+      setTimeout(() => {
+        window.removeEventListener('message', messageHandler);
+        popup.close();
+        reject(new Error('Authentication timeout'));
+      }, 300000);
+    });
+  }
+
+  async getMapData(bbox) {
+    if (!this.isAuthenticated) {
+      throw new Error('Not authenticated with OpenStreetMap');
+    }
+
+    const url = `${this.apiBaseUrl}/map?bbox=${bbox}`;
+    
+    try {
+      const response = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${this.accessToken}`
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      return await response.text();
+    } catch (error) {
+      console.error('Error fetching OSM map data:', error);
+      throw error;
+    }
+  }
+
+  async searchNodes(query, limit = 10) {
+    if (!this.isAuthenticated) {
+      throw new Error('Not authenticated with OpenStreetMap');
+    }
+
+    const url = `${this.apiBaseUrl}/search?q=${encodeURIComponent(query)}&limit=${limit}&format=json`;
+    
+    try {
+      const response = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${this.accessToken}`
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error('Error searching OSM nodes:', error);
+      throw error;
+    }
+  }
+
+  async getNodeDetails(nodeId) {
+    if (!this.isAuthenticated) {
+      throw new Error('Not authenticated with OpenStreetMap');
+    }
+
+    const url = `${this.apiBaseUrl}/node/${nodeId}`;
+    
+    try {
+      const response = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${this.accessToken}`
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      return await response.text();
+    } catch (error) {
+      console.error('Error fetching OSM node details:', error);
+      throw error;
+    }
+  }
+
+  async getUserDetails() {
+    if (!this.isAuthenticated) {
+      throw new Error('Not authenticated with OpenStreetMap');
+    }
+
+    const url = `${this.apiBaseUrl}/user/details.json`;
+    
+    try {
+      const response = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${this.accessToken}`
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching user details:', error);
+      throw error;
+    }
+  }
+
+  logout() {
+    this.accessToken = null;
+    this.isAuthenticated = false;
+    localStorage.removeItem('osm_auth_data');
+    console.log('OSM authentication cleared');
+  }
+}
+
 // ── INTELLIGENCE ENGINE ──
 class IntelligenceEngine {
   constructor() {
@@ -1777,6 +1986,7 @@ class IntelligenceEngine {
     this.opportunities = [];
     this.systemHealth = {};
     this.confidenceThreshold = 0.7;
+    this.osmClient = new OpenStreetMapClient();
   }
 
   // Core Intelligence Methods
@@ -4059,8 +4269,208 @@ function autoConfigureLLM() {
 // Initialize LLM configuration
 autoConfigureLLM();
 
+// Initialize OpenStreetMap configuration
+loadOSMConfig();
+
 // Initialize empty states
 initializeEmptyStates();
+
+// ── OPENSTREETMAP INTEGRATION FUNCTIONS ──
+function authenticateOSM() {
+  const clientId = document.getElementById('osmClientId').value;
+  const clientSecret = document.getElementById('osmClientSecret').value;
+  
+  if (!clientId || !clientSecret) {
+    alert('Please enter both Client ID and Client Secret');
+    return;
+  }
+  
+  // Initialize OSM client
+  dataProcessor.aiSystem.intelligenceEngine.osmClient.initialize(clientId, clientSecret);
+  
+  // Authenticate with OpenStreetMap
+  dataProcessor.aiSystem.intelligenceEngine.osmClient.authenticate()
+    .then(authData => {
+      console.log('OSM authentication successful:', authData);
+      updateOSMStatus(true);
+      
+      // Save credentials to localStorage
+      localStorage.setItem('osm_config', JSON.stringify({
+        clientId: clientId,
+        clientSecret: clientSecret
+      }));
+      
+      // Add success message to AI chat
+      addAIMessage('intelligence', '🗺️ OpenStreetMap integration successful! You can now access real-time map data and location intelligence.');
+    })
+    .catch(error => {
+      console.error('OSM authentication failed:', error);
+      updateOSMStatus(false);
+      alert('OpenStreetMap authentication failed: ' + error.message);
+    });
+}
+
+function updateOSMStatus(connected) {
+  const statusEl = document.getElementById('osmStatus');
+  if (connected) {
+    statusEl.innerHTML = '<span class="status-indicator good">🟢 Connected to OpenStreetMap</span>';
+  } else {
+    statusEl.innerHTML = '<span class="status-indicator simulation">🔴 Not Connected</span>';
+  }
+}
+
+function loadOSMConfig() {
+  // Try to load from environment variables first
+  const envClientId = 'qhlpBSo6yl3TA_vGBXO41KBb3zC-U3bKpmJkQ6ntr3I';
+  const envClientSecret = '9WgmpKMpjD4o7vA-mohZ1icb5qw8Jr1nZRnxzSZoccc';
+  
+  if (envClientId && envClientSecret) {
+    document.getElementById('osmClientId').value = envClientId;
+    document.getElementById('osmClientSecret').value = envClientSecret;
+    
+    // Initialize OSM client with environment credentials
+    dataProcessor.aiSystem.intelligenceEngine.osmClient.initialize(envClientId, envClientSecret);
+    
+    // Check if we have stored authentication
+    if (dataProcessor.aiSystem.intelligenceEngine.osmClient.isAuthenticated) {
+      updateOSMStatus(true);
+      console.log('OpenStreetMap initialized with environment credentials and stored auth');
+    } else {
+      updateOSMStatus(false);
+      console.log('OpenStreetMap initialized with environment credentials, auth required');
+    }
+  } else {
+    // Fallback to localStorage
+    const osmConfig = localStorage.getItem('osm_config');
+    if (osmConfig) {
+      try {
+        const config = JSON.parse(osmConfig);
+        document.getElementById('osmClientId').value = config.clientId || '';
+        document.getElementById('osmClientSecret').value = config.clientSecret || '';
+        
+        // Initialize OSM client with stored credentials
+        if (config.clientId && config.clientSecret) {
+          dataProcessor.aiSystem.intelligenceEngine.osmClient.initialize(config.clientId, config.clientSecret);
+          updateOSMStatus(dataProcessor.aiSystem.intelligenceEngine.osmClient.isAuthenticated);
+        }
+      } catch (error) {
+        console.error('Error loading OSM config:', error);
+      }
+    }
+  }
+}
+
+async function fetchOSMDataForIntelligence(bbox) {
+  try {
+    const osmClient = dataProcessor.aiSystem.intelligenceEngine.osmClient;
+    
+    if (!osmClient.isAuthenticated) {
+      throw new Error('OpenStreetMap not authenticated');
+    }
+    
+    const mapData = await osmClient.getMapData(bbox);
+    
+    // Parse OSM data and enhance intelligence
+    const enhancedNodes = await enhanceIntelligenceWithOSMData(mapData);
+    
+    return enhancedNodes;
+  } catch (error) {
+    console.error('Error fetching OSM data:', error);
+    throw error;
+  }
+}
+
+async function enhanceIntelligenceWithOSMData(osmData) {
+  // Parse OSM XML data
+  const parser = new DOMParser();
+  const xmlDoc = parser.parseFromString(osmData, 'text/xml');
+  
+  const nodes = xmlDoc.getElementsByTagName('node');
+  const ways = xmlDoc.getElementsByTagName('way');
+  const relations = xmlDoc.getElementsByTagName('relation');
+  
+  // Extract relevant geographic features
+  const geographicFeatures = {
+    roads: [],
+    buildings: [],
+    amenities: [],
+    natural: [],
+    landuse: []
+  };
+  
+  // Process nodes
+  for (let node of nodes) {
+    const tags = node.getElementsByTagName('tag');
+    const featureType = classifyOSMFeature(tags);
+    
+    if (featureType) {
+      geographicFeatures[featureType].push({
+        id: node.getAttribute('id'),
+        lat: node.getAttribute('lat'),
+        lon: node.getAttribute('lon'),
+        tags: extractTags(tags)
+      });
+    }
+  }
+  
+  // Process ways (roads, buildings, etc.)
+  for (let way of ways) {
+    const tags = way.getElementsByTagName('tag');
+    const featureType = classifyOSMFeature(tags);
+    
+    if (featureType) {
+      geographicFeatures[featureType].push({
+        id: way.getAttribute('id'),
+        type: 'way',
+        tags: extractTags(tags)
+      });
+    }
+  }
+  
+  return geographicFeatures;
+}
+
+function classifyOSMFeature(tags) {
+  const tagMap = {};
+  for (let tag of tags) {
+    const key = tag.getAttribute('k');
+    const value = tag.getAttribute('v');
+    tagMap[key] = value;
+  }
+  
+  // Classify based on OSM tags
+  if (tagMap.highway) return 'roads';
+  if (tagMap.building) return 'buildings';
+  if (tagMap.amenity) return 'amenities';
+  if (tagMap.natural) return 'natural';
+  if (tagMap.landuse) return 'landuse';
+  
+  return null;
+}
+
+function extractTags(tags) {
+  const tagMap = {};
+  for (let tag of tags) {
+    tagMap[tag.getAttribute('k')] = tag.getAttribute('v');
+  }
+  return tagMap;
+}
+
+async function searchNairobiLocations(query) {
+  try {
+    const osmClient = dataProcessor.aiSystem.intelligenceEngine.osmClient;
+    
+    if (!osmClient.isAuthenticated) {
+      throw new Error('OpenStreetMap not authenticated');
+    }
+    
+    const results = await osmClient.searchNodes(query + ' Nairobi Kenya');
+    return results;
+  } catch (error) {
+    console.error('Error searching Nairobi locations:', error);
+    throw error;
+  }
+}
 
 // ── LLM CONFIGURATION FUNCTIONS ──
 function toggleLLMConfig() {
