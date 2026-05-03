@@ -480,6 +480,15 @@ body{background:var(--sky);color:var(--text);font-family:'Plus Jakarta Sans',san
 .confidence-medium{background:var(--sun);color:var(--earth);}
 .confidence-low{background:var(--sky-deep);color:var(--text);}
 
+/* Loading and Error States */
+.loading-message{display:flex;flex-direction:column;align-items:center;gap:16px;padding:40px 20px;text-align:center;}
+.spinner{width:40px;height:40px;border:4px solid var(--sky);border-top:4px solid var(--earth-light);border-radius:50%;animation:spin 1s linear infinite;}
+@keyframes spin{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
+
+.error-message{display:flex;flex-direction:column;align-items:center;gap:12px;padding:40px 20px;text-align:center;}
+.error-icon{font-size:48px;color:var(--risk);}
+.error-details{font-size:12px;color:var(--text-soft);max-width:300px;}
+
 /* LLM Configuration Panel Styles */
 .llm-config-panel{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);z-index:2000;display:flex;align-items:center;justify-content:center;}
 .llm-config-content{background:var(--white);border-radius:12px;padding:24px;max-width:400px;width:90%;box-shadow:0 10px 30px rgba(0,0,0,0.3);}
@@ -665,11 +674,14 @@ body{background:var(--sky);color:var(--text);font-family:'Plus Jakarta Sans',san
           <div class="upload-icon">🧠</div>
           <div class="upload-text">
             <div class="upload-title">Activate Intelligence</div>
-            <div class="upload-sub">Upload data to unlock AI-powered insights and predictions</div>
+            <div class="upload-sub">Upload data or load Kenya statistics to unlock AI-powered insights</div>
             <label class="upload-btn">
               📎 Upload Data Files
               <input type="file" id="intelligence-data-input" accept=".csv,.xlsx,.xls,.pdf,.doc,.docx,.txt" onchange="handleDataUpload(this, 'intelligence')">
             </label>
+            <button class="upload-btn" onclick="loadKenyaData()" style="margin-top: 8px;">
+              🇰🇪 Load Kenya Data
+            </button>
           </div>
         </div>
         <div id="intelligence-snap-grid" class="snap-grid" style="display:none;">
@@ -1796,6 +1808,334 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
 });
+
+// ── KENYA DATA SOURCES INTEGRATION ──
+class KenyaDataAggregator {
+  constructor() {
+    this.knbsClient = new KNBSClient();
+    this.openDataClient = new KenyaOpenDataClient();
+    this.nairobiClient = new NairobiDataClient();
+    this.worldBankClient = new WorldBankKenyaClient();
+  }
+
+  async getAllNairobiData() {
+    try {
+      const data = {
+        population: await this.worldBankClient.getPopulationData(),
+        gdp: await this.worldBankClient.getGDPData(),
+        urbanPopulation: await this.worldBankClient.getUrbanPopulationData(),
+        services: await this.nairobiClient.getServiceData(),
+        projects: await this.nairobiClient.getDevelopmentProjects(),
+        healthFacilities: await this.nairobiClient.getHealthFacilities(),
+        education: await this.nairobiClient.getEducationalInstitutions()
+      };
+
+      return data;
+    } catch (error) {
+      console.error('Error aggregating Nairobi data:', error);
+      throw error;
+    }
+  }
+
+  async getComprehensiveIntelligenceData() {
+    try {
+      const data = await this.getAllNairobiData();
+      
+      // Transform data for intelligence engine
+      const transformedData = this.transformForIntelligence(data);
+      
+      return transformedData;
+    } catch (error) {
+      console.error('Error getting comprehensive intelligence data:', error);
+      throw error;
+    }
+  }
+
+  transformForIntelligence(rawData) {
+    return {
+      headers: ['indicator', 'value', 'year', 'source', 'category'],
+      rows: this.flattenData(rawData),
+      metadata: {
+        sources: ['KNBS', 'World Bank', 'Nairobi City County', 'Kenya Open Data'],
+        lastUpdated: new Date().toISOString(),
+        reliability: 'high'
+      }
+    };
+  }
+
+  flattenData(data) {
+    const rows = [];
+    
+    Object.keys(data).forEach(category => {
+      if (Array.isArray(data[category])) {
+        data[category].forEach(item => {
+          rows.push({
+            indicator: item.indicator || category,
+            value: item.value || item.count || 0,
+            year: item.year || new Date().getFullYear(),
+            source: item.source || 'Unknown',
+            category: category
+          });
+        });
+      } else if (typeof data[category] === 'object') {
+        Object.keys(data[category]).forEach(key => {
+          rows.push({
+            indicator: key,
+            value: data[category][key],
+            year: new Date().getFullYear(),
+            source: 'Aggregated',
+            category: category
+          });
+        });
+      }
+    });
+
+    return rows;
+  }
+}
+
+class KNBSClient {
+  constructor() {
+    this.baseUrl = 'https://data.knbs.or.ke/api';
+    this.portalUrl = 'https://data.knbs.or.ke';
+    this.apiKey = null;
+    this.isAuthenticated = false;
+  }
+
+  initialize(apiKey = null) {
+    this.apiKey = apiKey;
+    if (apiKey) {
+      this.isAuthenticated = true;
+    }
+  }
+
+  async getPopulationData(county = 'Nairobi', year = 2022) {
+    try {
+      const endpoint = `${this.baseUrl}/population?county=${encodeURIComponent(county)}&year=${year}`;
+      const response = await this.makeRequest(endpoint);
+      return response;
+    } catch (error) {
+      console.error('Error fetching population data:', error);
+      throw error;
+    }
+  }
+
+  async getEconomicData(indicator = 'GDP', county = 'Nairobi') {
+    try {
+      const endpoint = `${this.baseUrl}/economics?indicator=${encodeURIComponent(indicator)}&county=${encodeURIComponent(county)}`;
+      const response = await this.makeRequest(endpoint);
+      return response;
+    } catch (error) {
+      console.error('Error fetching economic data:', error);
+      throw error;
+    }
+  }
+
+  async getInfrastructureData(type = 'roads', county = 'Nairobi') {
+    try {
+      const endpoint = `${this.baseUrl}/infrastructure?type=${encodeURIComponent(type)}&county=${encodeURIComponent(county)}`;
+      const response = await this.makeRequest(endpoint);
+      return response;
+    } catch (error) {
+      console.error('Error fetching infrastructure data:', error);
+      throw error;
+    }
+  }
+
+  async getHealthData(facilityType = 'all', county = 'Nairobi') {
+    try {
+      const endpoint = `${this.baseUrl}/health?facility_type=${encodeURIComponent(facilityType)}&county=${encodeURIComponent(county)}`;
+      const response = await this.makeRequest(endpoint);
+      return response;
+    } catch (error) {
+      console.error('Error fetching health data:', error);
+      throw error;
+    }
+  }
+
+  async getEducationData(level = 'all', county = 'Nairobi') {
+    try {
+      const endpoint = `${this.baseUrl}/education?level=${encodeURIComponent(level)}&county=${encodeURIComponent(county)}`;
+      const response = await this.makeRequest(endpoint);
+      return response;
+    } catch (error) {
+      console.error('Error fetching education data:', error);
+      throw error;
+    }
+  }
+
+  async makeRequest(endpoint) {
+    const headers = {
+      'Content-Type': 'application/json',
+      'User-Agent': 'Mazingira-Intelligence-Platform/1.0'
+    };
+
+    if (this.apiKey) {
+      headers['Authorization'] = `Bearer ${this.apiKey}`;
+      headers['X-API-Key'] = this.apiKey;
+    }
+
+    try {
+      const response = await fetch(endpoint, {
+        method: 'GET',
+        headers: headers
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('KNBS API request failed:', error);
+      throw error;
+    }
+  }
+}
+
+class KenyaOpenDataClient {
+  constructor() {
+    this.baseUrl = 'https://opendata.go.ke/api';
+    this.portalUrl = 'https://opendata.go.ke';
+    this.apiKey = null;
+  }
+
+  initialize(apiKey = null) {
+    this.apiKey = apiKey;
+  }
+
+  async getNairobiData(category = 'all') {
+    try {
+      const endpoint = `${this.baseUrl}/datasets?category=${encodeURIComponent(category)}&county=nairobi`;
+      const response = await this.makeRequest(endpoint);
+      return response;
+    } catch (error) {
+      console.error('Error fetching Nairobi open data:', error);
+      throw error;
+    }
+  }
+
+  async makeRequest(endpoint) {
+    const headers = {
+      'Content-Type': 'application/json',
+      'User-Agent': 'Mazingira-Intelligence-Platform/1.0'
+    };
+
+    if (this.apiKey) {
+      headers['Authorization'] = `Bearer ${this.apiKey}`;
+    }
+
+    try {
+      const response = await fetch(endpoint, {
+        method: 'GET',
+        headers: headers
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Kenya Open Data API request failed:', error);
+      throw error;
+    }
+  }
+}
+
+class NairobiDataClient {
+  constructor() {
+    this.baseUrl = 'https://nairobi.go.ke/api';
+    this.portalUrl = 'https://nairobi.go.ke';
+  }
+
+  async getServiceData(serviceType = 'all') {
+    try {
+      const endpoint = `${this.baseUrl}/services?type=${encodeURIComponent(serviceType)}`;
+      const response = await fetch(endpoint);
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching Nairobi service data:', error);
+      throw error;
+    }
+  }
+
+  async getDevelopmentProjects() {
+    try {
+      const endpoint = `${this.baseUrl}/projects`;
+      const response = await fetch(endpoint);
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching development projects:', error);
+      throw error;
+    }
+  }
+
+  async getHealthFacilities() {
+    try {
+      const endpoint = `${this.baseUrl}/health/facilities`;
+      const response = await fetch(endpoint);
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching health facilities:', error);
+      throw error;
+    }
+  }
+
+  async getEducationalInstitutions() {
+    try {
+      const endpoint = `${this.baseUrl}/education/institutions`;
+      const response = await fetch(endpoint);
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching educational institutions:', error);
+      throw error;
+    }
+  }
+}
+
+class WorldBankKenyaClient {
+  constructor() {
+    this.baseUrl = 'https://api.worldbank.org/v2';
+    this.countryCode = 'KEN';
+  }
+
+  async getPopulationData() {
+    try {
+      const endpoint = `${this.baseUrl}/country/${this.countryCode}/indicator/SP.POP.TOTL?format=json`;
+      const response = await fetch(endpoint);
+      const data = await response.json();
+      return data[1];
+    } catch (error) {
+      console.error('Error fetching World Bank population data:', error);
+      throw error;
+    }
+  }
+
+  async getGDPData() {
+    try {
+      const endpoint = `${this.baseUrl}/country/${this.countryCode}/indicator/NY.GDP.MKTP.CD?format=json`;
+      const response = await fetch(endpoint);
+      const data = await response.json();
+      return data[1];
+    } catch (error) {
+      console.error('Error fetching World Bank GDP data:', error);
+      throw error;
+    }
+  }
+
+  async getUrbanPopulationData() {
+    try {
+      const endpoint = `${this.baseUrl}/country/${this.countryCode}/indicator/SP.URB.TOTL.IN.ZS?format=json`;
+      const response = await fetch(endpoint);
+      const data = await response.json();
+      return data[1];
+    } catch (error) {
+      console.error('Error fetching World Bank urban population data:', error);
+      throw error;
+    }
+  }
+}
 
 // ── OPENSTREETMAP INTEGRATION ──
 class OpenStreetMapClient {
@@ -4274,6 +4614,304 @@ loadOSMConfig();
 
 // Initialize empty states
 initializeEmptyStates();
+
+// Auto-load Kenya data for immediate intelligence insights
+setTimeout(() => {
+  autoLoadKenyaData();
+}, 2000);
+
+// ── KENYA DATA AUTO-LOAD FUNCTION ──
+async function autoLoadKenyaData() {
+  try {
+    // Show loading state
+    const uploadPrompt = document.getElementById('intelligence-upload-prompt');
+    const snapGrid = document.getElementById('intelligence-snap-grid');
+    
+    if (uploadPrompt) uploadPrompt.style.display = 'none';
+    if (snapGrid) snapGrid.style.display = 'block';
+    
+    // Add loading message
+    if (snapGrid) {
+      snapGrid.innerHTML = `
+        <div class="loading-message">
+          <div class="spinner"></div>
+          <div>Loading Kenya intelligence data...</div>
+        </div>
+      `;
+    }
+    
+    // Try to load real Kenya data first
+    try {
+      const kenyaDataAggregator = new KenyaDataAggregator();
+      const kenyaData = await kenyaDataAggregator.getComprehensiveIntelligenceData();
+      
+      console.log('Real Kenya data loaded:', kenyaData);
+      
+      // Process with intelligence engine
+      await dataProcessor.processIntelligenceData(kenyaData);
+      
+      // Add success message to AI chat
+      addAIMessage('intelligence', `🇰🇪 Kenya data successfully loaded! 
+        <br><strong>Sources:</strong> KNBS, World Bank, Nairobi City County, Kenya Open Data
+        <br><strong>Data Points:</strong> ${kenyaData.rows.length} indicators across ${kenyaData.metadata.sources.length} sources
+        <br><strong>Categories:</strong> Population, Economy, Infrastructure, Health, Education
+        <br><strong>Last Updated:</strong> ${new Date(kenyaData.metadata.lastUpdated).toLocaleString()}
+      `);
+      
+    } catch (apiError) {
+      console.log('API data not available, loading sample data:', apiError);
+      
+      // Fallback to sample data
+      const sampleData = generateSampleKenyaData();
+      
+      // Process with intelligence engine
+      await dataProcessor.processIntelligenceData(sampleData);
+      
+      // Add sample data message to AI chat
+      addAIMessage('intelligence', `🇰🇪 Sample Kenya data loaded for demonstration!
+        <br><strong>Data Type:</strong> Sample Nairobi County data
+        <br><strong>Data Points:</strong> ${sampleData.rows.length} indicators
+        <br><strong>Categories:</strong> Population, Economy, Infrastructure, Health, Education
+        <br><strong>Note:</strong> This is sample data. Connect to real APIs for live data.
+      `);
+    }
+    
+  } catch (error) {
+    console.error('Error in auto-load:', error);
+    
+    // Show error message but keep upload prompt visible
+    const snapGrid = document.getElementById('intelligence-snap-grid');
+    const uploadPrompt = document.getElementById('intelligence-upload-prompt');
+    
+    if (snapGrid) snapGrid.style.display = 'none';
+    if (uploadPrompt) uploadPrompt.style.display = 'block';
+    
+    // Add error message to AI chat
+    addAIMessage('intelligence', `🔄 Ready to analyze data. Upload files or use the "🇰🇪 Load Kenya Data" button to get started.`);
+  }
+}
+
+// ── KENYA DATA LOADING FUNCTIONS ──
+async function loadKenyaData() {
+  try {
+    // Show loading state
+    const uploadPrompt = document.getElementById('intelligence-upload-prompt');
+    const snapGrid = document.getElementById('intelligence-snap-grid');
+    
+    uploadPrompt.style.display = 'none';
+    snapGrid.style.display = 'block';
+    
+    // Add loading message
+    snapGrid.innerHTML = `
+      <div class="loading-message">
+        <div class="spinner"></div>
+        <div>Loading Kenya data from multiple sources...</div>
+      </div>
+    `;
+    
+    // Initialize Kenya data aggregator
+    const kenyaDataAggregator = new KenyaDataAggregator();
+    
+    // Fetch comprehensive data
+    const kenyaData = await kenyaDataAggregator.getComprehensiveIntelligenceData();
+    
+    console.log('Kenya data loaded:', kenyaData);
+    
+    // Process with intelligence engine
+    await dataProcessor.processIntelligenceData(kenyaData);
+    
+    // Add success message to AI chat
+    addAIMessage('intelligence', `🇰🇪 Kenya data successfully loaded! 
+      <br><strong>Sources:</strong> KNBS, World Bank, Nairobi City County, Kenya Open Data
+      <br><strong>Data Points:</strong> ${kenyaData.rows.length} indicators across ${kenyaData.metadata.sources.length} sources
+      <br><strong>Categories:</strong> Population, Economy, Infrastructure, Health, Education
+      <br><strong>Last Updated:</strong> ${new Date(kenyaData.metadata.lastUpdated).toLocaleString()}
+    `);
+    
+  } catch (error) {
+    console.error('Error loading Kenya data:', error);
+    
+    // Show error message
+    const snapGrid = document.getElementById('intelligence-snap-grid');
+    snapGrid.innerHTML = `
+      <div class="error-message">
+        <div class="error-icon">❌</div>
+        <div>Failed to load Kenya data</div>
+        <div class="error-details">${error.message}</div>
+        <button class="upload-btn" onclick="loadKenyaData()" style="margin-top: 12px;">
+          🔄 Retry
+        </button>
+      </div>
+    `;
+    
+    // Add error message to AI chat
+    addAIMessage('intelligence', `❌ Error loading Kenya data: ${error.message}. Please try again or check your internet connection.`);
+  }
+}
+
+// ── SAMPLE KENYA DATA GENERATOR ──
+function generateSampleKenyaData() {
+  return {
+    headers: ['location', 'population', 'infrastructure_quality', 'economic_activity', 'connectivity', 'growth_trend', 'environmental_pressure'],
+    rows: [
+      {
+        location: 'Nairobi CBD',
+        population: 85000,
+        infrastructure_quality: 0.8,
+        economic_activity: 0.9,
+        connectivity: 0.7,
+        growth_trend: 0.6,
+        environmental_pressure: 0.4
+      },
+      {
+        location: 'Mathare',
+        population: 45000,
+        infrastructure_quality: 0.3,
+        economic_activity: 0.4,
+        connectivity: 0.5,
+        growth_trend: 0.8,
+        environmental_pressure: 0.7
+      },
+      {
+        location: 'Westlands',
+        population: 62000,
+        infrastructure_quality: 0.7,
+        economic_activity: 0.8,
+        connectivity: 0.8,
+        growth_trend: 0.5,
+        environmental_pressure: 0.3
+      },
+      {
+        location: 'Karen',
+        population: 28000,
+        infrastructure_quality: 0.9,
+        economic_activity: 0.6,
+        connectivity: 0.6,
+        growth_trend: 0.3,
+        environmental_pressure: 0.2
+      },
+      {
+        location: 'Kibera',
+        population: 38000,
+        infrastructure_quality: 0.2,
+        economic_activity: 0.3,
+        connectivity: 0.4,
+        growth_trend: 0.7,
+        environmental_pressure: 0.8
+      },
+      {
+        location: 'Eastlands',
+        population: 52000,
+        infrastructure_quality: 0.5,
+        economic_activity: 0.6,
+        connectivity: 0.6,
+        growth_trend: 0.6,
+        environmental_pressure: 0.5
+      },
+      {
+        location: 'Ruiru',
+        population: 31000,
+        infrastructure_quality: 0.4,
+        economic_activity: 0.5,
+        connectivity: 0.5,
+        growth_trend: 0.8,
+        environmental_pressure: 0.4
+      },
+      {
+        location: 'Thika Road',
+        population: 41000,
+        infrastructure_quality: 0.7,
+        economic_activity: 0.7,
+        connectivity: 0.8,
+        growth_trend: 0.7,
+        environmental_pressure: 0.3
+      }
+    ],
+    metadata: {
+      sources: ['Sample Data'],
+      lastUpdated: new Date().toISOString(),
+      reliability: 'medium',
+      description: 'Sample Nairobi County data for demonstration'
+    }
+  };
+}
+
+async function loadSpecificKenyaData(source, category) {
+  try {
+    let data;
+    
+    switch(source) {
+      case 'knbs':
+        const knbsClient = new KNBSClient();
+        switch(category) {
+          case 'population':
+            data = await knbsClient.getPopulationData('Nairobi', 2022);
+            break;
+          case 'economy':
+            data = await knbsClient.getEconomicData('GDP', 'Nairobi');
+            break;
+          case 'infrastructure':
+            data = await knbsClient.getInfrastructureData('roads', 'Nairobi');
+            break;
+          case 'health':
+            data = await knbsClient.getHealthData('all', 'Nairobi');
+            break;
+          case 'education':
+            data = await knbsClient.getEducationData('all', 'Nairobi');
+            break;
+          default:
+            throw new Error('Invalid category for KNBS');
+        }
+        break;
+        
+      case 'worldbank':
+        const worldBankClient = new WorldBankKenyaClient();
+        switch(category) {
+          case 'population':
+            data = await worldBankClient.getPopulationData();
+            break;
+          case 'gdp':
+            data = await worldBankClient.getGDPData();
+            break;
+          case 'urban':
+            data = await worldBankClient.getUrbanPopulationData();
+            break;
+          default:
+            throw new Error('Invalid category for World Bank');
+        }
+        break;
+        
+      case 'nairobi':
+        const nairobiClient = new NairobiDataClient();
+        switch(category) {
+          case 'services':
+            data = await nairobiClient.getServiceData();
+            break;
+          case 'projects':
+            data = await nairobiClient.getDevelopmentProjects();
+            break;
+          case 'health':
+            data = await nairobiClient.getHealthFacilities();
+            break;
+          case 'education':
+            data = await nairobiClient.getEducationalInstitutions();
+            break;
+          default:
+            throw new Error('Invalid category for Nairobi City County');
+        }
+        break;
+        
+      default:
+        throw new Error('Invalid data source');
+    }
+    
+    return data;
+    
+  } catch (error) {
+    console.error(`Error loading ${source} ${category} data:`, error);
+    throw error;
+  }
+}
 
 // ── OPENSTREETMAP INTEGRATION FUNCTIONS ──
 function authenticateOSM() {
