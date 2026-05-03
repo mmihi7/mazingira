@@ -444,6 +444,42 @@ body{background:var(--sky);color:var(--text);font-family:'Plus Jakarta Sans',san
 .empty-action-btn{padding:12px 24px;background:var(--earth-light);color:var(--earth);border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.2s;}
 .empty-action-btn:hover{background:var(--earth);transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,0.15);}
 
+/* Intelligence Components */
+.intelligence-list{display:flex;flex-direction:column;gap:8px;}
+.empty-intelligence{display:flex;align-items:center;gap:8px;padding:12px;background:var(--sky);border-radius:6px;color:var(--text-soft);font-size:11px;}
+.empty-intelligence .empty-icon{font-size:16px;opacity:0.6;}
+.empty-intelligence .empty-text{font-style:italic;}
+
+.data-category{display:flex;flex-direction:column;gap:8px;}
+.empty-data{display:flex;align-items:center;gap:8px;padding:12px;background:var(--sky);border-radius:6px;color:var(--text-soft);font-size:11px;}
+.empty-data .empty-icon{font-size:16px;opacity:0.6;}
+.empty-data .empty-text{font-style:italic;}
+
+/* Intelligence Cards */
+.intelligence-card{background:var(--white);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:8px;cursor:pointer;transition:all 0.2s;}
+.intelligence-card:hover{border-color:var(--earth-light);transform:translateX(2px);box-shadow:0 2px 8px rgba(0,0,0,0.1);}
+.intelligence-card-header{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.intelligence-card-icon{font-size:20px;}
+.intelligence-card-title{font-size:14px;font-weight:700;color:var(--earth);}
+.intelligence-card-sub{font-size:11px;color:var(--text-soft);margin-left:auto;}
+.intelligence-card-body{font-size:11px;color:var(--text);line-height:1.4;}
+.intelligence-card-metrics{display:flex;gap:12px;margin-top:8px;}
+.intelligence-metric{display:flex;flex-direction:column;align-items:center;}
+.intelligence-metric-value{font-size:12px;font-weight:700;color:var(--earth);}
+.intelligence-metric-label{font-size:9px;color:var(--text-soft);text-transform:uppercase;}
+
+/* Node Detection Specific */
+.node-emerging{border-left:4px solid var(--earth-light);}
+.node-risk{border-left:4px solid var(--risk);}
+.node-opportunity{border-left:4px solid var(--sun);}
+.node-stable{border-left:4px solid var(--water);}
+
+/* Confidence Indicators */
+.confidence-indicator{display:inline-block;padding:2px 6px;border-radius:4px;font-size:9px;font-weight:600;margin-left:8px;}
+.confidence-high{background:var(--earth-light);color:white;}
+.confidence-medium{background:var(--sun);color:var(--earth);}
+.confidence-low{background:var(--sky-deep);color:var(--text);}
+
 /* LLM Configuration Panel Styles */
 .llm-config-panel{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);z-index:2000;display:flex;align-items:center;justify-content:center;}
 .llm-config-content{background:var(--white);border-radius:12px;padding:24px;max-width:400px;width:90%;box-shadow:0 10px 30px rgba(0,0,0,0.3);}
@@ -582,21 +618,288 @@ body{background:var(--sky);color:var(--text);font-family:'Plus Jakarta Sans',san
 
 <!-- TABS -->
 <div class="tabbar">
-  <div class="tab active" onclick="showPage('county')">🗺 County Overview</div>
-  <div class="tab" onclick="showPage('roads')">🏗 Roads & Buildings</div>
-  <div class="tab" onclick="showPage('nature')">🌳 Nature & Water</div>
-  <div class="tab" onclick="showPage('people')">👩‍👩‍👦 People & Services</div>
-  <div class="tab" onclick="showPage('economy')">💼 Jobs & Business</div>
-  <div class="tab" onclick="showPage('future')">🔮 Future Plans</div>
+  <div class="tab active" onclick="showPage('intelligence')">🧠 Intelligence Hub</div>
+  <div class="tab" onclick="showPage('data-explorer')">📂 Data Explorer</div>
 </div>
 
 <div class="app-body">
 
 <!-- ══════════════════════════════════
-     REUSABLE MAP SVG (injected per page via JS)
-     PAGE 1: COUNTY OVERVIEW
+     INTELLIGENCE HUB PAGE
 ══════════════════════════════════ -->
-<div class="page active" id="page-county">
+<div class="page active" id="page-intelligence">
+  <div class="three-col">
+    <!-- LEFT SIDEBAR - Intelligence Insights -->
+    <div class="sidebar">
+      <div class="sb-section">
+        <div class="sb-title">🧠 Intelligence Hub</div>
+        <div id="intelligence-upload-prompt" class="data-upload-prompt">
+          <div class="upload-icon">🧠</div>
+          <div class="upload-text">
+            <div class="upload-title">Activate Intelligence</div>
+            <div class="upload-sub">Upload data to unlock AI-powered insights and predictions</div>
+            <label class="upload-btn">
+              📎 Upload Data Files
+              <input type="file" id="intelligence-data-input" accept=".csv,.xlsx,.xls,.pdf,.doc,.docx,.txt" onchange="handleDataUpload(this, 'intelligence')">
+            </label>
+          </div>
+        </div>
+        <div id="intelligence-snap-grid" class="snap-grid" style="display:none;">
+          <!-- Dynamic intelligence metrics will be inserted here -->
+        </div>
+      </div>
+
+      <div class="sb-section">
+        <div class="sb-title">📍 Emerging Nodes</div>
+        <div id="emerging-nodes-list" class="intelligence-list">
+          <!-- Dynamic emerging nodes will be inserted here -->
+          <div class="empty-intelligence">
+            <div class="empty-icon">📍</div>
+            <div class="empty-text">Upload data to detect emerging urban nodes</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sb-section">
+        <div class="sb-title">⚠️ Risk Zones</div>
+        <div id="risk-zones-list" class="intelligence-list">
+          <!-- Dynamic risk zones will be inserted here -->
+          <div class="empty-intelligence">
+            <div class="empty-icon">⚠️</div>
+            <div class="empty-text">Upload data to identify high-risk areas</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sb-section">
+        <div class="sb-title">🚀 Growth Opportunities</div>
+        <div id="growth-opportunities-list" class="intelligence-list">
+          <!-- Dynamic growth opportunities will be inserted here -->
+          <div class="empty-intelligence">
+            <div class="empty-icon">🚀</div>
+            <div class="empty-text">Upload data to discover growth opportunities</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sb-section" style="padding-bottom:14px">
+        <div class="sb-title">🚨 Critical Alerts</div>
+        <div id="intelligence-alerts" class="county-alerts">
+          <!-- Dynamic alerts will be inserted here -->
+        </div>
+      </div>
+    </div>
+
+    <!-- MAP - Intelligence Visualization -->
+    <div class="map-col" id="map-intelligence">
+      <div class="empty-state" id="empty-intelligence-map">
+        <div class="empty-icon">🧠</div>
+        <div class="empty-title">Intelligence System Ready</div>
+        <div class="empty-sub">Upload data to activate AI-powered urban intelligence and predictive analytics</div>
+        <div class="empty-features">
+          <div class="feature-item">
+            <div class="feature-icon">📍</div>
+            <div class="feature-text">Emerging node detection</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon">⚠️</div>
+            <div class="feature-text">Risk zone identification</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon">🚀</div>
+            <div class="feature-text">Growth opportunity mapping</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon">🔄</div>
+            <div class="feature-text">Impact simulation</div>
+          </div>
+        </div>
+        <div class="empty-actions">
+          <button class="empty-action-btn" onclick="document.getElementById('intelligence-data-input').click()">
+            Activate Intelligence →
+          </button>
+        </div>
+      </div>
+
+      <!-- Dynamic intelligence map content will be inserted here -->
+      <div id="dynamic-intelligence-content" style="display:none;">
+        <!-- Intelligence visualization will be dynamically generated -->
+      </div>
+    </div>
+
+    <!-- RIGHT SIDEBAR - AI Advisor -->
+    <div class="advisor">
+      <div class="advisor-header">
+        <div class="advisor-title">🤖 AI Intelligence Advisor</div>
+        <div class="advisor-sub">Urban Systems Analysis</div>
+      </div>
+      <div class="chat" id="chat-intelligence">
+        <div class="bub ai">
+          <div class="bub-from">Mazingira Intelligence</div>
+          <div class="bub-txt">
+            <span class="tag good">🧠 Intelligence System Active</span><br>
+            Welcome to the Urban Intelligence Hub. I'm ready to analyze your data and provide insights on emerging nodes, risk zones, and growth opportunities across Nairobi County.<br><br>
+            <strong>Capabilities:</strong><br>
+            • 📍 Emerging node detection and prediction<br>
+            • ⚠️ Multi-dimensional risk assessment<br>
+            • 🚀 Growth opportunity identification<br>
+            • 🔄 Impact simulation and scenario analysis<br><br>
+            Upload your data to begin the intelligence analysis.
+          </div>
+        </div>
+      </div>
+      <div class="chat-input">
+        <input type="text" placeholder="Ask about intelligence findings..." id="intelligence-chat-input">
+        <button onclick="sendMessage('intelligence')">➤</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     DATA EXPLORER PAGE
+══════════════════════════════════ -->
+<div class="page" id="page-data-explorer">
+  <div class="three-col">
+    <!-- LEFT SIDEBAR - Data Categories -->
+    <div class="sidebar">
+      <div class="sb-section">
+        <div class="sb-title">📂 Data Explorer</div>
+        <div id="data-explorer-upload-prompt" class="data-upload-prompt">
+          <div class="upload-icon">📂</div>
+          <div class="upload-text">
+            <div class="upload-title">Upload Data for Analysis</div>
+            <div class="upload-sub">Structured and unstructured data for comprehensive analysis</div>
+            <label class="upload-btn">
+              📎 Upload Data Files
+              <input type="file" id="data-explorer-input" accept=".csv,.xlsx,.xls,.pdf,.doc,.docx,.txt" onchange="handleDataUpload(this, 'data-explorer')">
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="sb-section">
+        <div class="sb-title">🏗 Infrastructure</div>
+        <div id="infrastructure-data" class="data-category">
+          <div class="empty-data">
+            <div class="empty-icon">🏗</div>
+            <div class="empty-text">No infrastructure data yet</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sb-section">
+        <div class="sb-title">👥 Population</div>
+        <div id="population-data" class="data-category">
+          <div class="empty-data">
+            <div class="empty-icon">👥</div>
+            <div class="empty-text">No population data yet</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sb-section">
+        <div class="sb-title">🌳 Environment</div>
+        <div id="environment-data" class="data-category">
+          <div class="empty-data">
+            <div class="empty-icon">🌳</div>
+            <div class="empty-text">No environmental data yet</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sb-section">
+        <div class="sb-title">💼 Economy</div>
+        <div id="economy-data" class="data-category">
+          <div class="empty-data">
+            <div class="empty-icon">💼</div>
+            <div class="empty-text">No economic data yet</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sb-section">
+        <div class="sb-title">🔮 Development</div>
+        <div id="development-data" class="data-category">
+          <div class="empty-data">
+            <div class="empty-icon">🔮</div>
+            <div class="empty-text">No development data yet</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAP - Data Visualization -->
+    <div class="map-col" id="map-data-explorer">
+      <div class="empty-state" id="empty-data-map">
+        <div class="empty-icon">🗺</div>
+        <div class="empty-title">Data Visualization Ready</div>
+        <div class="empty-sub">Upload data to see layered geographic visualization and analysis</div>
+        <div class="empty-features">
+          <div class="feature-item">
+            <div class="feature-icon">🗺</div>
+            <div class="feature-text">Geographic data layers</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon">📊</div>
+            <div class="feature-text">Multi-dimensional analysis</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon">📈</div>
+            <div class="feature-text">Trend visualization</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon">🎯</div>
+            <div class="feature-text">Impact simulation</div>
+          </div>
+        </div>
+        <div class="empty-actions">
+          <button class="empty-action-btn" onclick="document.getElementById('data-explorer-input').click()">
+            Upload Data to Explore →
+          </button>
+        </div>
+      </div>
+
+      <!-- Dynamic data map content will be inserted here -->
+      <div id="dynamic-data-content" style="display:none;">
+        <!-- Data visualization will be dynamically generated -->
+      </div>
+    </div>
+
+    <!-- RIGHT SIDEBAR - Data Analysis -->
+    <div class="advisor">
+      <div class="advisor-header">
+        <div class="advisor-title">📊 Data Analysis</div>
+        <div class="advisor-sub">Multi-Domain Insights</div>
+      </div>
+      <div class="chat" id="chat-data-explorer">
+        <div class="bub ai">
+          <div class="bub-from">Mazingira Data Explorer</div>
+          <div class="bub-txt">
+            <span class="tag good">📂 Data Analysis Ready</span><br>
+            Welcome to the Data Explorer. Here you can upload and analyze data across multiple domains:<br><br>
+            <strong>Available Categories:</strong><br>
+            • 🏗 Infrastructure: Roads, buildings, utilities<br>
+            • 👥 Population: Demographics, services, needs<br>
+            • 🌳 Environment: Green spaces, water, pollution<br>
+            • 💼 Economy: Business, employment, investment<br>
+            • 🔮 Development: Plans, projects, projections<br><br>
+            Upload your data to begin comprehensive analysis.
+          </div>
+        </div>
+      </div>
+      <div class="chat-input">
+        <input type="text" placeholder="Ask about data analysis..." id="data-explorer-chat-input">
+        <button onclick="sendMessage('data-explorer')">➤</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     LEGACY PAGES (Hidden - for reference)
+══════════════════════════════════ -->
+<div class="page" id="page-county" style="display:none;">
   <div class="three-col">
 
     <!-- LEFT SIDEBAR -->
@@ -1466,6 +1769,443 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 });
 
+// ── INTELLIGENCE ENGINE ──
+class IntelligenceEngine {
+  constructor() {
+    this.nodes = [];
+    this.riskZones = [];
+    this.opportunities = [];
+    this.systemHealth = {};
+    this.confidenceThreshold = 0.7;
+  }
+
+  // Core Intelligence Methods
+  detectEmergingNodes(data) {
+    const nodes = [];
+    
+    // Node Detection Algorithm
+    if (data.rows && data.rows.length > 0) {
+      data.rows.forEach((row, index) => {
+        const signals = this.analyzeNodeSignals(row, data.headers);
+        const nodeScore = this.calculateNodeScore(signals);
+        const confidence = this.calculateConfidence(signals);
+        
+        if (nodeScore > 0.6 && confidence > this.confidenceThreshold) {
+          nodes.push({
+            id: `node_${index}`,
+            type: this.classifyNodeType(signals),
+            location: this.extractLocation(row),
+            score: nodeScore,
+            confidence: confidence,
+            signals: signals,
+            projection: this.projectGrowth(signals),
+            recommendations: this.generateNodeRecommendations(signals)
+          });
+        }
+      });
+    }
+    
+    this.nodes = nodes;
+    return nodes;
+  }
+
+  analyzeNodeSignals(row, headers) {
+    const signals = {
+      population_density: 0,
+      infrastructure_quality: 0,
+      economic_activity: 0,
+      connectivity: 0,
+      growth_trend: 0,
+      environmental_pressure: 0
+    };
+
+    headers.forEach((header, index) => {
+      const value = row[header] || row[index];
+      const headerLower = header.toLowerCase();
+      
+      if (headerLower.includes('population') || headerLower.includes('people')) {
+        signals.population_density = this.normalizeValue(value);
+      } else if (headerLower.includes('road') || headerLower.includes('infrastructure')) {
+        signals.infrastructure_quality = this.normalizeValue(value);
+      } else if (headerLower.includes('business') || headerLower.includes('economy')) {
+        signals.economic_activity = this.normalizeValue(value);
+      } else if (headerLower.includes('access') || headerLower.includes('connectivity')) {
+        signals.connectivity = this.normalizeValue(value);
+      } else if (headerLower.includes('growth') || headerLower.includes('trend')) {
+        signals.growth_trend = this.normalizeValue(value);
+      } else if (headerLower.includes('environment') || headerLower.includes('green')) {
+        signals.environmental_pressure = this.normalizeValue(value);
+      }
+    });
+
+    return signals;
+  }
+
+  calculateNodeScore(signals) {
+    const weights = {
+      population_density: 0.25,
+      infrastructure_quality: 0.20,
+      economic_activity: 0.25,
+      connectivity: 0.15,
+      growth_trend: 0.10,
+      environmental_pressure: 0.05
+    };
+
+    let score = 0;
+    Object.keys(signals).forEach(key => {
+      score += signals[key] * weights[key];
+    });
+
+    return Math.min(score, 1.0);
+  }
+
+  calculateConfidence(signals) {
+    const signalCount = Object.values(signals).filter(v => v > 0).length;
+    const totalSignals = Object.keys(signals).length;
+    return signalCount / totalSignals;
+  }
+
+  classifyNodeType(signals) {
+    if (signals.economic_activity > 0.7 && signals.population_density > 0.6) {
+      return 'commercial_hub';
+    } else if (signals.population_density > 0.8 && signals.infrastructure_quality < 0.5) {
+      return 'underserved_area';
+    } else if (signals.growth_trend > 0.7) {
+      return 'emerging_node';
+    } else if (signals.environmental_pressure > 0.7) {
+      return 'environmental_concern';
+    } else {
+      return 'stable_area';
+    }
+  }
+
+  extractLocation(row) {
+    // Try to extract location from row data
+    for (let key in row) {
+      if (key.toLowerCase().includes('location') || key.toLowerCase().includes('area')) {
+        return row[key];
+      }
+    }
+    return 'Unknown Location';
+  }
+
+  projectGrowth(signals) {
+    const growthRate = signals.growth_trend * 0.15; // 15% max growth
+    const populationImpact = signals.population_density * 0.1;
+    const economicImpact = signals.economic_activity * 0.08;
+    
+    return {
+      population_growth: growthRate + populationImpact,
+      economic_growth: growthRate + economicImpact,
+      infrastructure_need: (1 - signals.infrastructure_quality) * 0.2,
+      timeframe: '5 years'
+    };
+  }
+
+  generateNodeRecommendations(signals) {
+    const recommendations = [];
+    
+    if (signals.infrastructure_quality < 0.5) {
+      recommendations.push({
+        priority: 'high',
+        action: 'Upgrade infrastructure',
+        description: 'Invest in roads, water, and utilities'
+      });
+    }
+    
+    if (signals.economic_activity > 0.7 && signals.connectivity < 0.6) {
+      recommendations.push({
+        priority: 'medium',
+        action: 'Improve connectivity',
+        description: 'Enhance transport and digital infrastructure'
+      });
+    }
+    
+    if (signals.environmental_pressure > 0.6) {
+      recommendations.push({
+        priority: 'high',
+        action: 'Environmental protection',
+        description: 'Implement green infrastructure and conservation'
+      });
+    }
+    
+    return recommendations;
+  }
+
+  identifyRiskZones(data) {
+    const risks = [];
+    
+    if (data.rows && data.rows.length > 0) {
+      data.rows.forEach((row, index) => {
+        const riskSignals = this.analyzeRiskSignals(row, data.headers);
+        const riskScore = this.calculateRiskScore(riskSignals);
+        const confidence = this.calculateConfidence(riskSignals);
+        
+        if (riskScore > 0.5 && confidence > this.confidenceThreshold) {
+          risks.push({
+            id: `risk_${index}`,
+            type: this.classifyRiskType(riskSignals),
+            location: this.extractLocation(row),
+            score: riskScore,
+            confidence: confidence,
+            signals: riskSignals,
+            urgency: this.calculateUrgency(riskSignals),
+            mitigation: this.generateMitigationStrategies(riskSignals)
+          });
+        }
+      });
+    }
+    
+    this.riskZones = risks;
+    return risks;
+  }
+
+  analyzeRiskSignals(row, headers) {
+    const signals = {
+      flood_risk: 0,
+      population_density: 0,
+      infrastructure_deficit: 0,
+      environmental_degradation: 0,
+      economic_vulnerability: 0,
+      service_access: 0
+    };
+
+    headers.forEach((header, index) => {
+      const value = row[header] || row[index];
+      const headerLower = header.toLowerCase();
+      
+      if (headerLower.includes('flood') || headerLower.includes('risk')) {
+        signals.flood_risk = this.normalizeValue(value);
+      } else if (headerLower.includes('population') || headerLower.includes('density')) {
+        signals.population_density = this.normalizeValue(value);
+      } else if (headerLower.includes('infrastructure') || headerLower.includes('service')) {
+        signals.infrastructure_deficit = 1 - this.normalizeValue(value);
+        signals.service_access = this.normalizeValue(value);
+      } else if (headerLower.includes('environment') || headerLower.includes('pollution')) {
+        signals.environmental_degradation = this.normalizeValue(value);
+      } else if (headerLower.includes('economic') || headerLower.includes('poverty')) {
+        signals.economic_vulnerability = this.normalizeValue(value);
+      }
+    });
+
+    return signals;
+  }
+
+  calculateRiskScore(signals) {
+    const weights = {
+      flood_risk: 0.30,
+      population_density: 0.15,
+      infrastructure_deficit: 0.20,
+      environmental_degradation: 0.15,
+      economic_vulnerability: 0.20
+    };
+
+    let score = 0;
+    Object.keys(signals).forEach(key => {
+      score += signals[key] * weights[key];
+    });
+
+    return Math.min(score, 1.0);
+  }
+
+  classifyRiskType(signals) {
+    if (signals.flood_risk > 0.7) return 'flood_risk';
+    if (signals.environmental_degradation > 0.7) return 'environmental_risk';
+    if (signals.infrastructure_deficit > 0.7) return 'infrastructure_risk';
+    if (signals.economic_vulnerability > 0.7) return 'economic_risk';
+    return 'general_risk';
+  }
+
+  calculateUrgency(signals) {
+    const highRiskSignals = Object.values(signals).filter(v => v > 0.7).length;
+    if (highRiskSignals >= 3) return 'immediate';
+    if (highRiskSignals >= 2) return 'short_term';
+    return 'medium_term';
+  }
+
+  generateMitigationStrategies(signals) {
+    const strategies = [];
+    
+    if (signals.flood_risk > 0.6) {
+      strategies.push('Improve drainage systems');
+      strategies.push('Create flood barriers');
+    }
+    
+    if (signals.infrastructure_deficit > 0.6) {
+      strategies.push('Upgrade infrastructure');
+      strategies.push('Expand service coverage');
+    }
+    
+    if (signals.environmental_degradation > 0.6) {
+      strategies.push('Implement conservation measures');
+      strategies.push('Reduce pollution sources');
+    }
+    
+    return strategies;
+  }
+
+  identifyGrowthOpportunities(data) {
+    const opportunities = [];
+    
+    if (data.rows && data.rows.length > 0) {
+      data.rows.forEach((row, index) => {
+        const opportunitySignals = this.analyzeOpportunitySignals(row, data.headers);
+        const opportunityScore = this.calculateOpportunityScore(opportunitySignals);
+        const confidence = this.calculateConfidence(opportunitySignals);
+        
+        if (opportunityScore > 0.6 && confidence > this.confidenceThreshold) {
+          opportunities.push({
+            id: `opportunity_${index}`,
+            type: this.classifyOpportunityType(opportunitySignals),
+            location: this.extractLocation(row),
+            score: opportunityScore,
+            confidence: confidence,
+            signals: opportunitySignals,
+            potential: this.calculatePotential(opportunitySignals),
+            requirements: this.identifyRequirements(opportunitySignals)
+          });
+        }
+      });
+    }
+    
+    this.opportunities = opportunities;
+    return opportunities;
+  }
+
+  analyzeOpportunitySignals(row, headers) {
+    const signals = {
+      land_availability: 0,
+      market_demand: 0,
+      infrastructure_proximity: 0,
+      labor_availability: 0,
+      growth_trend: 0,
+      regulatory_favorability: 0
+    };
+
+    headers.forEach((header, index) => {
+      const value = row[header] || row[index];
+      const headerLower = header.toLowerCase();
+      
+      if (headerLower.includes('land') || headerLower.includes('space')) {
+        signals.land_availability = this.normalizeValue(value);
+      } else if (headerLower.includes('demand') || headerLower.includes('market')) {
+        signals.market_demand = this.normalizeValue(value);
+      } else if (headerLower.includes('infrastructure') || headerLower.includes('access')) {
+        signals.infrastructure_proximity = this.normalizeValue(value);
+      } else if (headerLower.includes('labor') || headerLower.includes('workforce')) {
+        signals.labor_availability = this.normalizeValue(value);
+      } else if (headerLower.includes('growth') || headerLower.includes('trend')) {
+        signals.growth_trend = this.normalizeValue(value);
+      }
+    });
+
+    return signals;
+  }
+
+  calculateOpportunityScore(signals) {
+    const weights = {
+      land_availability: 0.20,
+      market_demand: 0.25,
+      infrastructure_proximity: 0.20,
+      labor_availability: 0.15,
+      growth_trend: 0.20
+    };
+
+    let score = 0;
+    Object.keys(signals).forEach(key => {
+      score += signals[key] * weights[key];
+    });
+
+    return Math.min(score, 1.0);
+  }
+
+  classifyOpportunityType(signals) {
+    if (signals.market_demand > 0.7 && signals.land_availability > 0.6) {
+      return 'commercial_development';
+    } else if (signals.infrastructure_proximity > 0.7 && signals.labor_availability > 0.6) {
+      return 'industrial_development';
+    } else if (signals.growth_trend > 0.7) {
+      return 'residential_development';
+    } else {
+      return 'mixed_development';
+    }
+  }
+
+  calculatePotential(signals) {
+    const marketPotential = signals.market_demand * 0.4;
+    const growthPotential = signals.growth_trend * 0.3;
+    const infrastructureBonus = signals.infrastructure_proximity * 0.2;
+    const laborBonus = signals.labor_availability * 0.1;
+    
+    return {
+      roi: (marketPotential + growthPotential + infrastructureBonus + laborBonus) * 100,
+      timeframe: '3-5 years',
+      market_size: 'Medium to High'
+    };
+  }
+
+  identifyRequirements(signals) {
+    const requirements = [];
+    
+    if (signals.land_availability < 0.5) {
+      requirements.push('Land acquisition');
+    }
+    
+    if (signals.infrastructure_proximity < 0.6) {
+      requirements.push('Infrastructure development');
+    }
+    
+    if (signals.labor_availability < 0.6) {
+      requirements.push('Workforce development');
+    }
+    
+    return requirements;
+  }
+
+  normalizeValue(value) {
+    if (typeof value === 'string') {
+      // Extract numbers from strings
+      const numbers = value.match(/[\d.]+/);
+      if (numbers) {
+        const num = parseFloat(numbers[0]);
+        return Math.min(num / 100, 1.0); // Normalize to 0-1
+      }
+    } else if (typeof value === 'number') {
+      return Math.min(value / 100, 1.0);
+    }
+    return 0;
+  }
+
+  assessSystemHealth() {
+    const health = {
+      overall: 0,
+      nodes: this.nodes.length,
+      risks: this.riskZones.length,
+      opportunities: this.opportunities.length,
+      recommendations: []
+    };
+
+    // Calculate overall health score
+    const nodeHealth = Math.min(this.nodes.length / 10, 1.0) * 0.3;
+    const riskHealth = Math.max(0, 1 - (this.riskZones.length / 10)) * 0.4;
+    const opportunityHealth = Math.min(this.opportunities.length / 10, 1.0) * 0.3;
+    
+    health.overall = nodeHealth + riskHealth + opportunityHealth;
+
+    // Generate recommendations
+    if (health.overall < 0.5) {
+      health.recommendations.push('System requires immediate attention');
+    } else if (health.overall < 0.7) {
+      health.recommendations.push('System needs optimization');
+    } else {
+      health.recommendations.push('System operating effectively');
+    }
+
+    this.systemHealth = health;
+    return health;
+  }
+}
+
 // ── AI PROMPT SYSTEM & SKILLS ──
 class AIPromptSystem {
   constructor() {
@@ -1474,6 +2214,7 @@ class AIPromptSystem {
     this.elementPopulators = new Map();
     this.llmProvider = 'simulation'; // 'simulation', 'deepseek', 'openai', 'anthropic'
     this.apiKey = null;
+    this.intelligenceEngine = new IntelligenceEngine();
     this.initializeSkills();
   }
 
@@ -2198,17 +2939,472 @@ class DataProcessor {
       
       this.data[pageType] = parsedData;
       
-      // Use AI prompt system for intelligent analysis
-      const aiResponse = await this.aiSystem.processWithAI(parsedData, pageType, documentType);
-      this.insights[pageType] = aiResponse;
+      // Use Intelligence Engine for analysis
+      if (pageType === 'intelligence') {
+        await this.processIntelligenceData(parsedData);
+      } else if (pageType === 'data-explorer') {
+        await this.processExplorerData(parsedData);
+      } else {
+        // Use AI prompt system for other pages
+        const aiResponse = await this.aiSystem.processWithAI(parsedData, pageType, documentType);
+        this.insights[pageType] = aiResponse;
+        this.updateUIWithAI(pageType, aiResponse);
+      }
       
-      // Update UI with AI-generated insights
-      this.updateUIWithAI(pageType, aiResponse);
       this.hideProcessing(pageType);
     } catch (error) {
       console.error('Data processing error:', error);
       alert('Error processing data: ' + error.message);
     }
+  }
+
+  async processIntelligenceData(parsedData) {
+    // Run intelligence analysis
+    const nodes = this.aiSystem.intelligenceEngine.detectEmergingNodes(parsedData);
+    const risks = this.aiSystem.intelligenceEngine.identifyRiskZones(parsedData);
+    const opportunities = this.aiSystem.intelligenceEngine.identifyGrowthOpportunities(parsedData);
+    const systemHealth = this.aiSystem.intelligenceEngine.assessSystemHealth();
+    
+    // Store results
+    this.insights.intelligence = {
+      nodes: nodes,
+      risks: risks,
+      opportunities: opportunities,
+      systemHealth: systemHealth,
+      dataType: 'intelligence_analysis',
+      keyMetrics: this.generateIntelligenceMetrics(nodes, risks, opportunities),
+      alerts: this.generateIntelligenceAlerts(risks, systemHealth),
+      recommendations: this.generateIntelligenceRecommendations(nodes, risks, opportunities),
+      insights: this.generateIntelligenceInsights(nodes, risks, opportunities, systemHealth)
+    };
+    
+    // Update UI with intelligence results
+    this.updateIntelligenceUI();
+  }
+
+  async processExplorerData(parsedData) {
+    // Categorize data for explorer
+    const categorizedData = this.categorizeExplorerData(parsedData);
+    
+    this.insights['data-explorer'] = {
+      categorizedData: categorizedData,
+      dataType: 'explorer_analysis',
+      keyMetrics: this.generateExplorerMetrics(categorizedData),
+      alerts: [],
+      recommendations: [],
+      insights: [`Data categorized into ${Object.keys(categorizedData).length} domains`]
+    };
+    
+    // Update UI with explorer results
+    this.updateExplorerUI();
+  }
+
+  categorizeExplorerData(parsedData) {
+    const categories = {
+      infrastructure: [],
+      population: [],
+      environment: [],
+      economy: [],
+      development: []
+    };
+    
+    if (parsedData.rows && parsedData.rows.length > 0) {
+      parsedData.rows.forEach(row => {
+        const category = this.determineDataCategory(row, parsedData.headers);
+        if (category && categories[category]) {
+          categories[category].push(row);
+        }
+      });
+    }
+    
+    return categories;
+  }
+
+  determineDataCategory(row, headers) {
+    const content = Object.values(row).join(' ').toLowerCase();
+    
+    if (content.includes('road') || content.includes('infrastructure') || content.includes('building')) {
+      return 'infrastructure';
+    } else if (content.includes('population') || content.includes('people') || content.includes('demographic')) {
+      return 'population';
+    } else if (content.includes('environment') || content.includes('green') || content.includes('water')) {
+      return 'environment';
+    } else if (content.includes('economy') || content.includes('business') || content.includes('employment')) {
+      return 'economy';
+    } else if (content.includes('development') || content.includes('plan') || content.includes('project')) {
+      return 'development';
+    }
+    
+    return null;
+  }
+
+  generateIntelligenceMetrics(nodes, risks, opportunities) {
+    return [
+      {
+        name: 'Emerging Nodes',
+        value: nodes.length,
+        trend: nodes.length > 0 ? 'up' : 'stable',
+        status: nodes.length > 5 ? 'good' : nodes.length > 0 ? 'warn' : 'risk',
+        icon: '📍'
+      },
+      {
+        name: 'Risk Zones',
+        value: risks.length,
+        trend: risks.length > 3 ? 'up' : 'stable',
+        status: risks.length > 5 ? 'risk' : risks.length > 2 ? 'warn' : 'good',
+        icon: '⚠️'
+      },
+      {
+        name: 'Growth Opportunities',
+        value: opportunities.length,
+        trend: opportunities.length > 0 ? 'up' : 'stable',
+        status: opportunities.length > 3 ? 'good' : opportunities.length > 0 ? 'warn' : 'risk',
+        icon: '🚀'
+      },
+      {
+        name: 'System Health',
+        value: Math.round((this.aiSystem.intelligenceEngine.systemHealth.overall || 0) * 100) + '%',
+        trend: 'stable',
+        status: (this.aiSystem.intelligenceEngine.systemHealth.overall || 0) > 0.7 ? 'good' : 'warn',
+        icon: '📊'
+      }
+    ];
+  }
+
+  generateIntelligenceAlerts(risks, systemHealth) {
+    const alerts = [];
+    
+    // High-priority risks
+    const highRisks = risks.filter(r => r.urgency === 'immediate');
+    if (highRisks.length > 0) {
+      alerts.push({
+        type: 'risk',
+        title: `${highRisks.length} Immediate Risk Zones`,
+        description: 'Requires urgent attention and intervention',
+        icon: '🚨'
+      });
+    }
+    
+    // System health alerts
+    if (systemHealth.overall < 0.5) {
+      alerts.push({
+        type: 'risk',
+        title: 'System Health Critical',
+        description: 'Overall system health requires immediate action',
+        icon: '📉'
+      });
+    } else if (systemHealth.overall < 0.7) {
+      alerts.push({
+        type: 'warn',
+        title: 'System Health Needs Attention',
+        description: 'System optimization recommended',
+        icon: '⚠️'
+      });
+    }
+    
+    // Opportunity alerts
+    if (risks.length > opportunities.length) {
+      alerts.push({
+        type: 'warn',
+        title: 'Risk-Opportunity Imbalance',
+        description: 'More risks than opportunities identified',
+        icon: '⚖️'
+      });
+    }
+    
+    return alerts;
+  }
+
+  generateIntelligenceRecommendations(nodes, risks, opportunities) {
+    const recommendations = [];
+    
+    // Node-based recommendations
+    nodes.forEach(node => {
+      node.recommendations.forEach(rec => {
+        recommendations.push({
+          title: rec.action,
+          description: `${rec.description} at ${node.location}`,
+          priority: rec.priority,
+          location: node.location
+        });
+      });
+    });
+    
+    // Risk-based recommendations
+    risks.forEach(risk => {
+      risk.mitigation.forEach(strategy => {
+        recommendations.push({
+          title: `Risk Mitigation: ${risk.type}`,
+          description: `${strategy} for ${risk.location}`,
+          priority: risk.urgency === 'immediate' ? 'high' : 'medium',
+          location: risk.location
+        });
+      });
+    });
+    
+    return recommendations;
+  }
+
+  generateIntelligenceInsights(nodes, risks, opportunities, systemHealth) {
+    const insights = [];
+    
+    if (nodes.length > 0) {
+      insights.push(`Detected ${nodes.length} emerging urban nodes with growth potential`);
+    }
+    
+    if (risks.length > 0) {
+      insights.push(`Identified ${risks.length} risk zones requiring intervention`);
+    }
+    
+    if (opportunities.length > 0) {
+      insights.push(`Found ${opportunities.length} growth opportunities for development`);
+    }
+    
+    insights.push(`System health score: ${Math.round(systemHealth.overall * 100)}%`);
+    
+    return insights;
+  }
+
+  generateExplorerMetrics(categorizedData) {
+    const metrics = [];
+    
+    Object.keys(categorizedData).forEach(category => {
+      if (categorizedData[category].length > 0) {
+        metrics.push({
+          name: category.charAt(0).toUpperCase() + category.slice(1),
+          value: categorizedData[category].length,
+          trend: 'stable',
+          status: 'good',
+          icon: this.getCategoryIcon(category)
+        });
+      }
+    });
+    
+    return metrics;
+  }
+
+  getCategoryIcon(category) {
+    const icons = {
+      infrastructure: '🏗',
+      population: '👥',
+      environment: '🌳',
+      economy: '💼',
+      development: '🔮'
+    };
+    return icons[category] || '📊';
+  }
+
+  updateIntelligenceUI() {
+    // Update emerging nodes
+    this.updateEmergingNodesList();
+    
+    // Update risk zones
+    this.updateRiskZonesList();
+    
+    // Update growth opportunities
+    this.updateGrowthOpportunitiesList();
+    
+    // Update snap grid
+    this.updateSnapGridWithAI('intelligence', this.insights.intelligence.keyMetrics);
+    
+    // Update alerts
+    this.updateAlertsWithAI('intelligence', this.insights.intelligence.alerts);
+    
+    // Update AI chat
+    this.updateAIChatWithAI('intelligence', this.insights.intelligence);
+    
+    // Hide empty state, show dynamic content
+    const emptyState = document.getElementById('empty-intelligence-map');
+    const dynamicContent = document.getElementById('dynamic-intelligence-content');
+    
+    if (emptyState) emptyState.style.display = 'none';
+    if (dynamicContent) dynamicContent.style.display = 'block';
+  }
+
+  updateEmergingNodesList() {
+    const nodesList = document.getElementById('emerging-nodes-list');
+    if (!nodesList) return;
+    
+    const nodes = this.insights.intelligence.nodes;
+    
+    if (nodes.length === 0) {
+      nodesList.innerHTML = `
+        <div class="empty-intelligence">
+          <div class="empty-icon">📍</div>
+          <div class="empty-text">No emerging nodes detected</div>
+        </div>
+      `;
+      return;
+    }
+    
+    let html = '';
+    nodes.forEach(node => {
+      const confidenceClass = node.confidence > 0.8 ? 'high' : node.confidence > 0.6 ? 'medium' : 'low';
+      const nodeClass = `node-${node.type}`;
+      
+      html += `
+        <div class="intelligence-card ${nodeClass}">
+          <div class="intelligence-card-header">
+            <div class="intelligence-card-icon">📍</div>
+            <div class="intelligence-card-title">${node.location}</div>
+            <div class="intelligence-card-sub">${node.type.replace('_', ' ')}</div>
+          </div>
+          <div class="intelligence-card-body">
+            Node score: ${Math.round(node.score * 100)}% with ${node.projection.population_growth > 0 ? '+' : ''}${Math.round(node.projection.population_growth * 100)}% population growth projected
+          </div>
+          <div class="intelligence-card-metrics">
+            <div class="intelligence-metric">
+              <div class="intelligence-metric-value">${Math.round(node.score * 100)}%</div>
+              <div class="intelligence-metric-label">Score</div>
+            </div>
+            <div class="intelligence-metric">
+              <div class="intelligence-metric-value">${Math.round(node.confidence * 100)}%</div>
+              <div class="intelligence-metric-label">Confidence</div>
+            </div>
+          </div>
+        </div>
+      `;
+    });
+    
+    nodesList.innerHTML = html;
+  }
+
+  updateRiskZonesList() {
+    const risksList = document.getElementById('risk-zones-list');
+    if (!risksList) return;
+    
+    const risks = this.insights.intelligence.risks;
+    
+    if (risks.length === 0) {
+      risksList.innerHTML = `
+        <div class="empty-intelligence">
+          <div class="empty-icon">⚠️</div>
+          <div class="empty-text">No risk zones identified</div>
+        </div>
+      `;
+      return;
+    }
+    
+    let html = '';
+    risks.forEach(risk => {
+      const urgencyClass = risk.urgency === 'immediate' ? 'risk' : risk.urgency === 'short_term' ? 'warn' : 'good';
+      
+      html += `
+        <div class="intelligence-card node-risk">
+          <div class="intelligence-card-header">
+            <div class="intelligence-card-icon">⚠️</div>
+            <div class="intelligence-card-title">${risk.location}</div>
+            <div class="intelligence-card-sub">${risk.type.replace('_', ' ')}</div>
+          </div>
+          <div class="intelligence-card-body">
+            Risk score: ${Math.round(risk.score * 100)}% - ${risk.urgency.replace('_', ' ')} attention required
+          </div>
+          <div class="intelligence-card-metrics">
+            <div class="intelligence-metric">
+              <div class="intelligence-metric-value">${Math.round(risk.score * 100)}%</div>
+              <div class="intelligence-metric-label">Risk</div>
+            </div>
+            <div class="intelligence-metric">
+              <div class="intelligence-metric-value">${risk.mitigation.length}</div>
+              <div class="intelligence-metric-label">Strategies</div>
+            </div>
+          </div>
+        </div>
+      `;
+    });
+    
+    risksList.innerHTML = html;
+  }
+
+  updateGrowthOpportunitiesList() {
+    const opportunitiesList = document.getElementById('growth-opportunities-list');
+    if (!opportunitiesList) return;
+    
+    const opportunities = this.insights.intelligence.opportunities;
+    
+    if (opportunities.length === 0) {
+      opportunitiesList.innerHTML = `
+        <div class="empty-intelligence">
+          <div class="empty-icon">🚀</div>
+          <div class="empty-text">No growth opportunities found</div>
+        </div>
+      `;
+      return;
+    }
+    
+    let html = '';
+    opportunities.forEach(opportunity => {
+      html += `
+        <div class="intelligence-card node-opportunity">
+          <div class="intelligence-card-header">
+            <div class="intelligence-card-icon">🚀</div>
+            <div class="intelligence-card-title">${opportunity.location}</div>
+            <div class="intelligence-card-sub">${opportunity.type.replace('_', ' ')}</div>
+          </div>
+          <div class="intelligence-card-body">
+            Potential ROI: ${Math.round(opportunity.potential.roi)}% over ${opportunity.potential.timeframe}
+          </div>
+          <div class="intelligence-card-metrics">
+            <div class="intelligence-metric">
+              <div class="intelligence-metric-value">${Math.round(opportunity.potential.roi)}%</div>
+              <div class="intelligence-metric-label">ROI</div>
+            </div>
+            <div class="intelligence-metric">
+              <div class="intelligence-metric-value">${opportunity.requirements.length}</div>
+              <div class="intelligence-metric-label">Requirements</div>
+            </div>
+          </div>
+        </div>
+      `;
+    });
+    
+    opportunitiesList.innerHTML = html;
+  }
+
+  updateExplorerUI() {
+    // Update data categories
+    Object.keys(this.insights['data-explorer'].categorizedData).forEach(category => {
+      const categoryElement = document.getElementById(`${category}-data`);
+      if (categoryElement) {
+        const data = this.insights['data-explorer'].categorizedData[category];
+        
+        if (data.length === 0) {
+          categoryElement.innerHTML = `
+            <div class="empty-data">
+              <div class="empty-icon">${this.getCategoryIcon(category)}</div>
+              <div class="empty-text">No ${category} data yet</div>
+            </div>
+          `;
+        } else {
+          let html = '';
+          data.forEach((item, index) => {
+            html += `
+              <div class="data-item">
+                <div class="data-item-icon">${this.getCategoryIcon(category)}</div>
+                <div class="data-item-content">
+                  <div class="data-item-title">Record ${index + 1}</div>
+                  <div class="data-item-sub">${Object.keys(item).length} data points</div>
+                </div>
+              </div>
+            `;
+          });
+          categoryElement.innerHTML = html;
+        }
+      }
+    });
+    
+    // Update snap grid
+    this.updateSnapGridWithAI('data-explorer', this.insights['data-explorer'].keyMetrics);
+    
+    // Update AI chat
+    this.updateAIChatWithAI('data-explorer', this.insights['data-explorer']);
+    
+    // Hide empty state, show dynamic content
+    const emptyState = document.getElementById('empty-data-map');
+    const dynamicContent = document.getElementById('dynamic-data-content');
+    
+    if (emptyState) emptyState.style.display = 'none';
+    if (dynamicContent) dynamicContent.style.display = 'block';
   }
 
   // Initialize empty state for all pages
